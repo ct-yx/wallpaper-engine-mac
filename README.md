@@ -9,6 +9,10 @@ A patched fork of [Open Wallpaper Engine](https://github.com/MrWindDog/wallpaper
 
 > **Note:** This is NOT affiliated with the commercial Wallpaper Engine on Steam. This is an open-source macOS app that can display wallpaper assets from Wallpaper Engine's Steam Workshop.
 
+## Related Projects
+
+- **[Open Wallpaper Engine for Linux](https://github.com/Unayung/simple-linux-wallpaperengine-gui)** — A PyQt6 GUI for [linux-wallpaperengine](https://github.com/Almamu/linux-wallpaperengine), with Steam Workshop integration and UI design ported from this macOS version.
+
 ## Credits
 
 This project is built on top of the work of:

@@ -9,6 +9,10 @@ Open Wallpaper Engine（パッチ版）
 
 > **注意：** 本プロジェクトは Steam の商用版 Wallpaper Engine とは無関係です。Steam Workshop の壁紙アセットを表示できるオープンソースの macOS アプリケーションです。
 
+## 関連プロジェクト
+
+- **[Open Wallpaper Engine for Linux](https://github.com/Unayung/simple-linux-wallpaperengine-gui)** — [linux-wallpaperengine](https://github.com/Almamu/linux-wallpaperengine) 向けの PyQt6 GUI。Steam Workshop 統合と UI デザインは本 macOS バージョンから移植されました。
+
 ## クレジット
 
 本プロジェクトは以下の貢献者の成果に基づいています：
