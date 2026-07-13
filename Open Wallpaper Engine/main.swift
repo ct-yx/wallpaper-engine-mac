@@ -7,5 +7,6 @@
 
 import Cocoa
 
+AppLocalization.applySavedLanguage()
 NSApplication.shared.delegate = AppDelegate.shared
 NSApplication.shared.run()

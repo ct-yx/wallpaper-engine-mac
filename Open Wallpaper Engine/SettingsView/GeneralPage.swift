@@ -9,6 +9,7 @@ import SwiftUI
 
 struct GeneralPage: SettingsPage {
     @ObservedObject var viewModel: GlobalSettingsViewModel
+    @State private var languageChangeRequiresRelaunch = false
     
     init(globalSettings viewModel: GlobalSettingsViewModel) {
         self.viewModel = viewModel
@@ -29,7 +30,16 @@ struct GeneralPage: SettingsPage {
                     Text("Follow System").tag(GSLocalization.followSystem)
                     Text("English").tag(GSLocalization.en_US)
                     Text("Chinese Simplified").tag(GSLocalization.zh_CN)
-                }.disabled(true)
+                }
+                .onChange(of: viewModel.settings.language) { _ in
+                    languageChangeRequiresRelaunch = true
+                }
+
+                if languageChangeRequiresRelaunch {
+                    Text("Language changes take effect the next time you open Open Wallpaper Engine.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             } header: {
                 Label("Basic Setup", systemImage: "gearshape.fill")
             }

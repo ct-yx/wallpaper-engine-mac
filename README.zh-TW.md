@@ -1,7 +1,7 @@
 Open Wallpaper Engine（修補版）
 =========
 
-[English](README.md) | **繁體中文** | [日本語](README.ja.md)
+[English](README.md) | [简体中文](README.zh-CN.md) | **繁體中文** | [日本語](README.ja.md)
 
 [![GitHub license](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
 
@@ -122,7 +122,7 @@ Cmd+點擊選取多個桌布，右鍵選擇批次取消訂閱。
 
 ### 步驟
 ```sh
-git clone https://github.com/unayung/wallpaper-engine-mac
+git clone https://github.com/ct-yx/wallpaper-engine-mac.git
 cd wallpaper-engine-mac
 open "Open Wallpaper Engine.xcodeproj"
 ```

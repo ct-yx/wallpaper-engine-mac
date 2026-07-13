@@ -108,7 +108,7 @@ struct ContentView: View {
                 viewModel.hoveredWallpaper = nil
             }
         } message: {
-            Text("\(viewModel.hoveredWallpaper?.project.title ?? "invalid wallpaper")")
+            Text(viewModel.hoveredWallpaper?.project.title ?? String(localized: "Invalid wallpaper"))
         }
         .confirmationDialog("Batch Unsubscribe Confirmation",
                             isPresented: $viewModel.isBatchUnsubscribeConfirming) {
@@ -130,8 +130,11 @@ struct ContentView: View {
         } message: {
             let items = viewModel.selectedWallpaperItems()
             let names = items.prefix(3).map(\.project.title).joined(separator: ", ")
-            let suffix = items.count > 3 ? " and \(items.count - 3) more" : ""
-            Text("Unsubscribe \(items.count) wallpapers: \(names)\(suffix)")
+            if items.count > 3 {
+                Text("Unsubscribe \(items.count) wallpapers: \(names) and \(items.count - 3) more")
+            } else {
+                Text("Unsubscribe \(items.count) wallpapers: \(names)")
+            }
         }
         .alert(isPresented: $viewModel.importAlertPresented, error: viewModel.importAlertError) {
 

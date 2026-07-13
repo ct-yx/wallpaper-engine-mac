@@ -59,7 +59,7 @@ class SteamCmdService: ObservableObject {
             try process.run()
         } catch {
             handle.readabilityHandler = nil
-            return ("Failed to run steamcmd: \(error.localizedDescription)", -1)
+            return (String(format: String(localized: "Failed to run steamcmd: %@"), error.localizedDescription), -1)
         }
 
         if let input,
@@ -85,7 +85,7 @@ class SteamCmdService: ObservableObject {
         if waitGroup.wait(timeout: deadline) == .timedOut {
             process.terminate()
             handle.readabilityHandler = nil
-            return ("steamcmd timed out after \(Int(timeout))s", -1)
+            return (String(format: String(localized: "steamcmd timed out after %d s"), Int(timeout)), -1)
         }
 
         handle.readabilityHandler = nil
@@ -169,7 +169,7 @@ class SteamCmdService: ObservableObject {
 
     func setCustomPath(_ path: String) {
         guard FileManager.default.fileExists(atPath: path) else {
-            pathError = "File not found at selected path."
+            pathError = String(localized: "File not found at selected path.")
             return
         }
         // Make executable if needed (e.g. steamcmd.sh from Steam package)
@@ -212,11 +212,11 @@ class SteamCmdService: ObservableObject {
                     self.loginError = nil
                     UserDefaults.standard.set(username, forKey: Self.lastUsernameKey)
                 } else if output.contains("Steam Guard") || output.contains("Two-factor") {
-                    self.loginError = "Steam Guard code required"
+                    self.loginError = String(localized: "Steam Guard code required")
                 } else if output.contains("Invalid Password") || output.contains("FAILED") {
-                    self.loginError = "Invalid username or password"
+                    self.loginError = String(localized: "Invalid username or password")
                 } else {
-                    self.loginError = "Login failed. Check credentials and try again."
+                    self.loginError = String(localized: "Login failed. Check credentials and try again.")
                 }
             }
         }
@@ -241,7 +241,7 @@ class SteamCmdService: ObservableObject {
                     self.isLoggedIn = true
                     UserDefaults.standard.set(username, forKey: Self.lastUsernameKey)
                 } else {
-                    self.loginError = "Cached session expired. Please log in with password."
+                    self.loginError = String(localized: "Cached session expired. Please log in with password.")
                 }
             }
         }
@@ -251,7 +251,7 @@ class SteamCmdService: ObservableObject {
     func downloadWorkshopItem(workshopId: String) {
         guard let cmdPath = steamCmdPath, isLoggedIn else { return }
 
-        downloadProgress[workshopId] = .downloading(status: "Starting steamcmd...")
+        downloadProgress[workshopId] = .downloading(status: String(localized: "Starting steamcmd..."))
 
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
@@ -290,7 +290,9 @@ class SteamCmdService: ObservableObject {
             } catch {
                 handle.readabilityHandler = nil
                 DispatchQueue.main.async {
-                    self.downloadProgress[workshopId] = .failed("steamcmd failed to run: \(error.localizedDescription)")
+                    self.downloadProgress[workshopId] = .failed(
+                        String(format: String(localized: "steamcmd failed to run: %@"), error.localizedDescription)
+                    )
                 }
                 return
             }
@@ -308,7 +310,7 @@ class SteamCmdService: ObservableObject {
                 .appending(path: "workshop/content/431960/\(workshopId)")
 
             DispatchQueue.main.async {
-                self.downloadProgress[workshopId] = .downloading(status: "Copying to library...")
+                self.downloadProgress[workshopId] = .downloading(status: String(localized: "Copying to library..."))
 
                 if let sourceDir = sourcePath {
                     let fm = FileManager.default
@@ -318,7 +320,9 @@ class SteamCmdService: ObservableObject {
                             do {
                                 try fm.copyItem(at: sourceDir, to: dest)
                             } catch {
-                                self.downloadProgress[workshopId] = .failed("Copy failed: \(error.localizedDescription)")
+                                self.downloadProgress[workshopId] = .failed(
+                                    String(format: String(localized: "Copy failed: %@"), error.localizedDescription)
+                                )
                                 return
                             }
                         }
@@ -330,12 +334,14 @@ class SteamCmdService: ObservableObject {
                 if fullOutput.contains("ERROR") || fullOutput.contains("FAILED") {
                     let errorLine = fullOutput.components(separatedBy: "\n")
                         .first(where: { $0.contains("ERROR") || $0.contains("FAILED") })
-                        ?? "Unknown error"
+                        ?? String(localized: "Unknown error")
                     self.downloadProgress[workshopId] = .failed(errorLine)
                 } else if exitCode != 0 {
-                    self.downloadProgress[workshopId] = .failed("Exit code \(exitCode)")
+                    self.downloadProgress[workshopId] = .failed(
+                        String(format: String(localized: "Exit code %d"), exitCode)
+                    )
                 } else {
-                    self.downloadProgress[workshopId] = .failed("Files not found at expected path")
+                    self.downloadProgress[workshopId] = .failed(String(localized: "Files not found at expected path"))
                 }
             }
         }
@@ -347,30 +353,30 @@ class SteamCmdService: ObservableObject {
         guard !trimmed.isEmpty else { return nil }
 
         if trimmed.contains("Logging in") || trimmed.contains("Logged in") {
-            return "Authenticating..."
+            return String(localized: "Authenticating...")
         }
         if trimmed.contains("Downloading item") || trimmed.contains("workshop_download_item") {
-            return "Requesting download..."
+            return String(localized: "Requesting download...")
         }
         if trimmed.contains("Downloading") || trimmed.contains("downloading") {
             // Try to extract percentage like "Update state (0x61) downloading, progress: 45.23"
             if let range = trimmed.range(of: "progress:\\s*([\\d.]+)", options: .regularExpression),
                let pct = Double(trimmed[range].replacingOccurrences(of: "progress:", with: "").trimmingCharacters(in: .whitespaces)) {
-                return String(format: "Downloading... %.0f%%", min(pct, 100))
+                return String(format: String(localized: "Downloading... %.0f%%"), min(pct, 100))
             }
-            return "Downloading..."
+            return String(localized: "Downloading...")
         }
         if trimmed.contains("Validating") || trimmed.contains("validating") {
-            return "Validating..."
+            return String(localized: "Validating...")
         }
         if trimmed.contains("Success") {
-            return "Download complete, importing..."
+            return String(localized: "Download complete, importing...")
         }
         if trimmed.contains("Update state") {
             // Generic state update
-            if trimmed.contains("0x5") { return "Validating..." }
-            if trimmed.contains("0x61") { return "Downloading..." }
-            if trimmed.contains("0x101") { return "Committing..." }
+            if trimmed.contains("0x5") { return String(localized: "Validating...") }
+            if trimmed.contains("0x61") { return String(localized: "Downloading...") }
+            if trimmed.contains("0x101") { return String(localized: "Committing...") }
         }
         return nil
     }

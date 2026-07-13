@@ -62,7 +62,7 @@ extension AppDelegate {
             menu.addItem(NSMenuItem(title: String(localized: "No recent wallpapers"), action: nil, keyEquivalent: ""))
         } else {
             for wallpaper in recents {
-                let title = wallpaper.project.title.isEmpty ? "Untitled" : wallpaper.project.title
+                let title = wallpaper.project.title.isEmpty ? String(localized: "Untitled") : wallpaper.project.title
                 let typeLabel = wallpaper.project.type.isEmpty ? "" : " (\(wallpaper.project.type.capitalized))"
                 let item = NSMenuItem(title: "\(title)\(typeLabel)", action: #selector(selectRecentWallpaper(_:)), keyEquivalent: "")
                 item.representedObject = wallpaper

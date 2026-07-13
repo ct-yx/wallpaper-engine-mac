@@ -14,17 +14,17 @@ struct WPImportError: LocalizedError {
     var helpAnchor: String?
     var recoverySuggestion: String?
     
-    static let permissionDenied         = WPImportError(errorDescription: "Permission Denied",
-                                                failureReason: "This app doesn't have the permission to access to the folder(s) you selected",
-                                                helpAnchor: "File Permission",
-                                                recoverySuggestion: "Try enable it in 'System Settings' - 'Privacy & Security'")
+    static let permissionDenied         = WPImportError(errorDescription: String(localized: "Permission Denied"),
+                                                failureReason: String(localized: "This app doesn't have the permission to access to the folder(s) you selected"),
+                                                helpAnchor: String(localized: "File Permission"),
+                                                recoverySuggestion: String(localized: "Try enable it in 'System Settings' - 'Privacy & Security'"))
     
-    static let doesNotContainWallpaper  = WPImportError(errorDescription: "No Wallpaper(s) Inside",
-                                                       failureReason: "Maybe you selected the wrong folder which doesn't contain any wallpapers",
-                                                       helpAnchor: "Contents in Folder(s)",
-                                                       recoverySuggestion: "Check the folder(s) you selected and try again")
+    static let doesNotContainWallpaper  = WPImportError(errorDescription: String(localized: "No Wallpaper(s) Inside"),
+                                                       failureReason: String(localized: "Maybe you selected the wrong folder which doesn't contain any wallpapers"),
+                                                       helpAnchor: String(localized: "Contents in Folder(s)"),
+                                                       recoverySuggestion: String(localized: "Check the folder(s) you selected and try again"))
     
-    static let unkown                   = WPImportError(errorDescription: "Unkown Error",
+    static let unkown                   = WPImportError(errorDescription: String(localized: "Unknown Error"),
                                                         failureReason: "",
                                                         helpAnchor: "",
                                                         recoverySuggestion: "")

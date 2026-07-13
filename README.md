@@ -1,7 +1,7 @@
 Open Wallpaper Engine (Patched)
 =========
 
-**English** | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md)
+**English** | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md)
 
 [![GitHub license](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
 
@@ -122,7 +122,7 @@ The import panel now correctly handles both individual wallpaper folders and par
 
 ### Steps
 ```sh
-git clone https://github.com/unayung/wallpaper-engine-mac
+git clone https://github.com/ct-yx/wallpaper-engine-mac.git
 cd wallpaper-engine-mac
 open "Open Wallpaper Engine.xcodeproj"
 ```

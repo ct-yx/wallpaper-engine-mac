@@ -2,7 +2,14 @@
   "sourceLanguage" : "en",
   "strings" : {
     "" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ""
+          }
+        }
+      }
     },
     "_approved" : {
       "extractionState" : "manual",
@@ -90,7 +97,14 @@
       }
     },
     "!!! Notice that this may affects performance !!!" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "注意：此项可能影响性能！"
+          }
+        }
+      }
     },
     "@haren724" : {
       "localizations" : {
@@ -114,10 +128,24 @@
       }
     },
     "%@" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
+        }
+      }
     },
     "%lld" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld"
+          }
+        }
+      }
     },
     "×8 MSAA is only recommended for powerful high-end desktop graphics cards." : {
       "localizations" : {
@@ -130,7 +158,14 @@
       }
     },
     "1 per page (developer)" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每页 1 项（开发者）"
+          }
+        }
+      }
     },
     "10 per page" : {
       "localizations" : {
@@ -213,7 +248,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "添加到播放列表"
           }
         }
@@ -223,8 +258,8 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "添加新的壁纸"
+            "state" : "translated",
+            "value" : "添加新壁纸"
           }
         }
       }
@@ -233,7 +268,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "调整菜单栏颜色"
           }
         }
@@ -243,7 +278,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "高级"
           }
         }
@@ -253,7 +288,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "年龄分级"
           }
         }
@@ -263,20 +298,27 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "全选"
           }
         }
       }
     },
     "Animates" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启用动画"
+          }
+        }
+      }
     },
     "Anti-aliasing" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "抗锯齿"
           }
         }
@@ -286,7 +328,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "外观"
           }
         }
@@ -306,7 +348,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "为每个应用设置规则"
           }
         }
@@ -316,7 +358,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "应用到所有壁纸"
           }
         }
@@ -326,7 +368,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "绑定快捷键"
           }
         }
@@ -336,7 +378,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "音频"
           }
         }
@@ -346,7 +388,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "音频输出"
           }
         }
@@ -356,7 +398,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "自动"
           }
         }
@@ -366,7 +408,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "自动"
           }
         }
@@ -376,7 +418,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "自动启动"
           }
         }
@@ -386,7 +428,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "基础设置"
           }
         }
@@ -396,7 +438,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "低于正常"
           }
         }
@@ -406,7 +448,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "所有内容的打开方式"
           }
         }
@@ -416,7 +458,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "浏览预设"
           }
         }
@@ -436,7 +478,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "取消"
           }
         }
@@ -446,7 +488,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "更换"
           }
         }
@@ -456,7 +498,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "简体中文"
           }
         }
@@ -466,7 +508,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "选择显示器"
           }
         }
@@ -483,13 +525,20 @@
       }
     },
     "Come out soon..." : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "敬请期待…"
+          }
+        }
+      }
     },
     "Comment" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "评论"
           }
         }
@@ -499,7 +548,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "设置"
           }
         }
@@ -539,7 +588,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "黑色主题"
           }
         }
@@ -576,13 +625,20 @@
       }
     },
     "Description..." : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "说明…"
+          }
+        }
+      }
     },
     "Developer" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "开发者"
           }
         }
@@ -592,7 +648,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "禁用"
           }
         }
@@ -602,7 +658,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "发现"
           }
         }
@@ -612,7 +668,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "显示器休眠"
           }
         }
@@ -622,7 +678,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "显示器选择"
           }
         }
@@ -642,7 +698,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "双显示器"
           }
         }
@@ -652,7 +708,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "编辑"
           }
         }
@@ -662,7 +718,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "已编辑"
           }
         }
@@ -672,7 +728,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "启用"
           }
         }
@@ -682,7 +738,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "英文"
           }
         }
@@ -702,7 +758,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "仅错误"
           }
         }
@@ -713,8 +769,8 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "喜欢"
+            "state" : "translated",
+            "value" : "收藏"
           }
         }
       }
@@ -734,7 +790,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "文件大小"
           }
         }
@@ -744,7 +800,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "过滤结果"
           }
         }
@@ -754,7 +810,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "跟随系统"
           }
         }
@@ -764,7 +820,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "帧率"
           }
         }
@@ -775,7 +831,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "完全托管"
           }
         }
@@ -796,7 +852,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "组"
           }
         }
@@ -806,8 +862,8 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "打个胶先"
+            "state" : "translated",
+            "value" : "你好，世界！"
           }
         }
       }
@@ -846,7 +902,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "高"
           }
         }
@@ -876,7 +932,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "高性能"
           }
         }
@@ -886,7 +942,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "高品质"
           }
         }
@@ -896,7 +952,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "图标尺寸"
           }
         }
@@ -926,20 +982,27 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "已安装"
           }
         }
       }
     },
     "Internal" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "内置"
+          }
+        }
+      }
     },
     "Keep Running" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "继续运行"
           }
         }
@@ -949,7 +1012,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "语言"
           }
         }
@@ -959,8 +1022,8 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "当笔记本连接电源时"
+            "state" : "translated",
+            "value" : "使用电池时"
           }
         }
       }
@@ -969,7 +1032,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "大图标"
           }
         }
@@ -980,8 +1043,8 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "最近添加"
+            "state" : "translated",
+            "value" : "最近更新"
           }
         }
       }
@@ -990,8 +1053,8 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "白色主题"
+            "state" : "translated",
+            "value" : "浅色主题"
           }
         }
       }
@@ -1000,7 +1063,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "加载"
           }
         }
@@ -1010,7 +1073,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "加载配置"
           }
         }
@@ -1020,8 +1083,8 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "日志记录等级"
+            "state" : "translated",
+            "value" : "日志级别"
           }
         }
       }
@@ -1030,7 +1093,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "低"
           }
         }
@@ -1060,7 +1123,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "管理屏蔽列表"
           }
         }
@@ -1070,7 +1133,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "中"
           }
         }
@@ -1080,7 +1143,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "中图标"
           }
         }
@@ -1090,7 +1153,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "手机应用"
           }
         }
@@ -1140,7 +1203,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "静音"
           }
         }
@@ -1151,7 +1214,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "名称"
           }
         }
@@ -1211,7 +1274,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "正常"
           }
         }
@@ -1221,7 +1284,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "好"
           }
         }
@@ -1232,7 +1295,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "仅在应用程序运行时启用"
           }
         }
@@ -1242,7 +1305,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "在访达中打开工作目录"
           }
         }
@@ -1252,7 +1315,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "在访达中打开当前壁纸"
           }
         }
@@ -1262,7 +1325,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "在创意工坊中打开"
           }
         }
@@ -1272,7 +1335,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "打开壁纸文件"
           }
         }
@@ -1312,7 +1375,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "当焦点转移到其他应用时"
           }
         }
@@ -1322,7 +1385,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "当其他应用程序进入全屏时"
           }
         }
@@ -1332,7 +1395,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "当其他应用程序播放音频时"
           }
         }
@@ -1352,7 +1415,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "暂停"
           }
         }
@@ -1362,7 +1425,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "当显存耗尽时暂停"
           }
         }
@@ -1383,8 +1446,8 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "回放"
+            "state" : "translated",
+            "value" : "播放"
           }
         }
       }
@@ -1393,8 +1456,8 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "回放速率"
+            "state" : "translated",
+            "value" : "播放速率"
           }
         }
       }
@@ -1403,7 +1466,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "播放列表"
           }
         }
@@ -1474,8 +1537,8 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "休眠/加载中…"
+            "state" : "translated",
+            "value" : "省电模式，正在休眠…"
           }
         }
       }
@@ -1494,7 +1557,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "进程优先级"
           }
         }
@@ -1504,7 +1567,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "属性"
           }
         }
@@ -1525,7 +1588,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "质量"
           }
         }
@@ -1546,7 +1609,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "评分"
           }
         }
@@ -1576,7 +1639,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "反射"
           }
         }
@@ -1596,7 +1659,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "相关壁纸"
           }
         }
@@ -1616,7 +1679,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "移除壁纸"
           }
         }
@@ -1626,7 +1689,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "反馈"
           }
         }
@@ -1636,7 +1699,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "举报&拦截"
           }
         }
@@ -1646,7 +1709,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "重置"
           }
         }
@@ -1666,7 +1729,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "初始化所有配置"
           }
         }
@@ -1676,7 +1739,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "重置筛选条件"
           }
         }
@@ -1696,7 +1759,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "分辨率"
           }
         }
@@ -1727,7 +1790,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "保存"
           }
         }
@@ -1737,7 +1800,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "保存配置"
           }
         }
@@ -1747,7 +1810,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "风格颜色"
           }
         }
@@ -1757,7 +1820,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "搜索"
           }
         }
@@ -1777,7 +1840,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "设置"
           }
         }
@@ -1797,7 +1860,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "共享JSON"
           }
         }
@@ -1817,7 +1880,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "仅展示:"
           }
         }
@@ -1847,20 +1910,27 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "小标题"
+            "state" : "translated",
+            "value" : "小图标"
           }
         }
       }
     },
     "Sort By" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "排序方式"
+          }
+        }
+      }
     },
     "Source" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "来源"
           }
         }
@@ -1870,7 +1940,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "分隔"
           }
         }
@@ -1890,7 +1960,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "停止（释放内存）"
           }
         }
@@ -1901,7 +1971,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "订阅时间"
           }
         }
@@ -1911,8 +1981,8 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "高性能"
+            "state" : "translated",
+            "value" : "极高性能"
           }
         }
       }
@@ -1931,7 +2001,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "标签"
           }
         }
@@ -1941,7 +2011,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "纹理分辨率"
           }
         }
@@ -1951,26 +2021,47 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "主题"
           }
         }
       }
     },
     "Third-party" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第三方"
+          }
+        }
+      }
     },
     "This plugin enables animation of GIF thumbnail images in wallpaper explorer" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此插件可为壁纸浏览器中的 GIF 缩略图启用动画。"
+          }
+        }
+      }
     },
     "Those all settings above don't have to be saved for taking effect." : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以上设置会立即生效，无需保存。"
+          }
+        }
+      }
     },
     "Titles per page" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "每页壁纸数量"
           }
         }
@@ -2000,7 +2091,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "类型"
           }
         }
@@ -2010,8 +2101,8 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "超级"
+            "state" : "translated",
+            "value" : "极高"
           }
         }
       }
@@ -2030,8 +2121,8 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "带鱼屏"
+            "state" : "translated",
+            "value" : "超宽屏"
           }
         }
       }
@@ -2050,8 +2141,8 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "佚名"
+            "state" : "translated",
+            "value" : "未知作者"
           }
         }
       }
@@ -2070,7 +2161,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "取消订阅"
           }
         }
@@ -2110,7 +2201,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "视频"
           }
         }
@@ -2120,7 +2211,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "视频播放框架"
           }
         }
@@ -2130,7 +2221,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "预览"
           }
         }
@@ -2140,7 +2231,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "音量"
           }
         }
@@ -2150,7 +2241,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "壁纸编辑器"
           }
         }
@@ -2190,8 +2281,8 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "每台显示器壁纸"
+            "state" : "translated",
+            "value" : "每个显示器的壁纸"
           }
         }
       }
@@ -2200,7 +2291,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "壁纸标题"
           }
         }
@@ -2280,8 +2371,8 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "正在开发哦~"
+            "state" : "translated",
+            "value" : "开发中"
           }
         }
       }
@@ -2290,7 +2381,7 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "创意工坊"
           }
         }
@@ -2337,8 +2428,144 @@
       }
     },
     "􀄪 You can toggle this to have a preview" : {
-
-    }
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可切换此项以预览效果"
+          }
+        }
+      }
+    },
+    "API request failed — check your network connection" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "API 请求失败，请检查网络连接。" } } } },
+    "Abstract" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "抽象" } } } },
+    "Animal" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "动物" } } } },
+    "Anime" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "动漫" } } } },
+    "Application" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "应用程序" } } } },
+    "App logo icons" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "应用图标" } } } },
+    "Authenticating..." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在验证…" } } } },
+    "Authenticating with Steam..." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在通过 Steam 验证…" } } } },
+    "Batch Unsubscribe Confirmation" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "批量取消订阅确认" } } } },
+    "Browse..." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "浏览…" } } } },
+    "brew install steamcmd" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "brew install steamcmd" } } } },
+    "Cached session expired. Please log in with password." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "缓存会话已过期，请使用密码重新登录。" } } } },
+    "Cartoon" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "卡通" } } } },
+    "CGI" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "CGI" } } } },
+    "Check the folder(s) you selected and try again" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请检查所选文件夹后重试。" } } } },
+    "Chinese i18n" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "中文本地化" } } } },
+    "Click a display to select it, then choose a wallpaper from the library." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "点击显示器进行选择，然后从壁纸库中选择壁纸。" } } } },
+    "Committing..." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在提交…" } } } },
+    "Contents in Folder(s)" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "文件夹内容" } } } },
+    "Contributors" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "贡献者" } } } },
+    "Copy failed: %@" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "复制失败：%@" } } } },
+    "Copying to library..." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在复制到壁纸库…" } } } },
+    "Cyberpunk" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "赛博朋克" } } } },
+    "Delete All %lld Immediately" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "立即删除全部 %lld 张壁纸" } } } },
+    "Display Settings" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "显示器设置" } } } },
+    "Downloaded" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已下载" } } } },
+    "Download" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "下载" } } } },
+    "Downloading... %.0f%%" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在下载… %.0f%%" } } } },
+    "Downloading..." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在下载…" } } } },
+    "Download complete, importing..." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "下载完成，正在导入…" } } } },
+    "Enter Steam Guard Code" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "输入 Steam 令牌验证码" } } } },
+    "Everyone" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "全年龄" } } } },
+    "Exit code %d" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "退出代码 %d" } } } },
+    "Failed" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "失败" } } } },
+    "Failed to run steamcmd: %@" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "无法运行 steamcmd：%@" } } } },
+    "Fantasy" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "奇幻" } } } },
+    "File not found at selected path." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "所选路径中未找到文件。" } } } },
+    "File Permission" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "文件权限" } } } },
+    "Files not found at expected path" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "未在预期路径找到文件。" } } } },
+    "Find wallpapers by name, tag, or browse trending content." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "按名称或标签查找壁纸，或浏览热门内容。" } } } },
+    "Game" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "游戏" } } } },
+    "Get a free key at" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "免费密钥获取地址：" } } } },
+    "Girls" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "女性" } } } },
+    "Guys" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "男性" } } } },
+    "Invalid API key.\nGet a valid key at steamcommunity.com/dev/apikey" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "无效的 API 密钥。\n请在 steamcommunity.com/dev/apikey 获取有效密钥。" } } } },
+    "Invalid API URL" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "无效的 API 地址" } } } },
+    "Invalid username or password" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "用户名或密码无效" } } } },
+    "Invalid wallpaper" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "无效壁纸" } } } },
+    "Landscape" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "风景" } } } },
+    "Language changes take effect the next time you open Open Wallpaper Engine." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "语言更改将在下次打开 Open Wallpaper Engine 时生效。" } } } },
+    "Load More" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "加载更多" } } } },
+    "Log In" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "登录" } } } },
+    "Login failed. Check credentials and try again." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "登录失败，请检查账号信息后重试。" } } } },
+    "Login to download" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "登录后下载" } } } },
+    "Log in with your Steam account to browse and download wallpapers.\nYou must own Wallpaper Engine on Steam." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请使用 Steam 帐号登录，以浏览和下载壁纸。\n你必须在 Steam 上拥有 Wallpaper Engine。" } } } },
+    "Mature" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "成人内容" } } } },
+    "Medieval" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "中世纪" } } } },
+    "Memes" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "梗图" } } } },
+    "MMD" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "MMD" } } } },
+    "Most Popular" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "最受欢迎" } } } },
+    "Most Recent" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "最新" } } } },
+    "Most Subscribed" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "订阅最多" } } } },
+    "Move All %lld to Trash" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "将全部 %lld 张壁纸移到废纸篓" } } } },
+    "Music" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "音乐" } } } },
+    "Nature" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "自然" } } } },
+    "No recent wallpapers" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "没有最近使用的壁纸" } } } },
+    "No wallpaper" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "未设置壁纸" } } } },
+    "No Wallpaper(s) Inside" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "没有找到壁纸" } } } },
+    "Opening Unknown %@" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在打开未知的 %@" } } } },
+    "Original creator" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "原始作者" } } } },
+    "Or locate an existing steamcmd binary:" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "或选择已有的 steamcmd 可执行文件：" } } } },
+    "Password" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "密码" } } } },
+    "Permission Denied" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "没有访问权限" } } } },
+    "Pixel Art" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "像素艺术" } } } },
+    "Please wait %d seconds." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请等待 %d 秒。" } } } },
+    "Questionable" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "敏感内容" } } } },
+    "Rating:" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "分级：" } } } },
+    "Re-detect" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "重新检测" } } } },
+    "Relaxing" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "放松" } } } },
+    "Remove" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "移除" } } } },
+    "Requesting download..." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在请求下载…" } } } },
+    "Resume" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "继续播放" } } } },
+    "Retro" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "复古" } } } },
+    "Save & Search" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "保存并搜索" } } } },
+    "Scene" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "场景" } } } },
+    "Scene rendering, Workshop, multi-display" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "场景渲染、创意工坊、多显示器" } } } },
+    "Sci-Fi" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "科幻" } } } },
+    "Search the Steam Workshop" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "搜索 Steam 创意工坊" } } } },
+    "Search wallpapers..." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "搜索壁纸…" } } } },
+    "Searching Workshop..." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在搜索创意工坊…" } } } },
+    "Select the steamcmd executable" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "选择 steamcmd 可执行文件" } } } },
+    "Sort" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "排序" } } } },
+    "Sports" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "体育" } } } },
+    "Starting steamcmd..." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在启动 steamcmd…" } } } },
+    "steamcmd failed to run: %@" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "steamcmd 无法运行：%@" } } } },
+    "steamcmd Not Found" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "未找到 steamcmd" } } } },
+    "steamcmd timed out after %d s" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "steamcmd 在 %d 秒后超时" } } } },
+    "Steam API returned HTTP %d" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Steam API 返回 HTTP %d" } } } },
+    "Steam Guard Code" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Steam 令牌验证码" } } } },
+    "Steam Guard code required" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "需要 Steam 令牌验证码" } } } },
+    "Steam Login" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Steam 登录" } } } },
+    "Steam Username" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Steam 用户名" } } } },
+    "Steam Web API Key" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Steam Web API 密钥" } } } },
+    "Steam Web API key required.\nGet a free key at steamcommunity.com/dev/apikey\nthen enter it below." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "需要 Steam Web API 密钥。\n请在 steamcommunity.com/dev/apikey 获取免费密钥，\n然后在下方输入。" } } } },
+    "Steam Workshop requires steamcmd to download wallpapers.\nInstall it with Homebrew:" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Steam 创意工坊需要 steamcmd 才能下载壁纸。\n可通过 Homebrew 安装：" } } } },
+    "Television" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "电视" } } } },
+    "This app doesn't have the permission to access to the folder(s) you selected" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "此应用没有访问所选文件夹的权限。" } } } },
+    "Trending" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "热门" } } } },
+    "Try enable it in 'System Settings' - 'Privacy & Security'" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请在“系统设置”>“隐私与安全性”中授予权限。" } } } },
+    "Type:" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "类型：" } } } },
+    "Unknown error" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "未知错误" } } } },
+    "Unknown Error" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "未知错误" } } } },
+    "Unsubscribe %lld wallpapers: %@" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "取消订阅 %lld 张壁纸：%@" } } } },
+    "Unsubscribe %lld wallpapers: %@ and %lld more" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "取消订阅 %lld 张壁纸：%@，以及另外 %lld 张" } } } },
+    "Unsubscribe Selected (%lld)" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "取消订阅所选项目（%lld）" } } } },
+    "Untitled" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "未命名" } } } },
+    "Upstream maintainer" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "上游维护者" } } } },
+    "Use Cached Session" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "使用缓存会话" } } } },
+    "Validating..." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在验证文件…" } } } },
+    "Vehicle" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "载具" } } } },
+    "Wallpaper" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "壁纸" } } } },
+    "Wallpaper display is disabled on this screen." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "此显示器已禁用壁纸显示。" } } } },
+    "Web" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "网页" } } } },
+    "Web Page" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "网页" } } } },
+    "You'll also need a Steam Web API key to browse the Workshop." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "还需要 Steam Web API 密钥才能浏览创意工坊。" } } } },
+    "—" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "—" } } } },
+    "A Steam Web API key is required to browse." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "浏览需要 Steam Web API 密钥。" } } } },
+    "Maybe you selected the wrong folder which doesn't contain any wallpapers" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "所选文件夹中似乎不含任何壁纸。" } } } },
+    "Technology" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "科技" } } } }
   },
   "version" : "1.0"
 }

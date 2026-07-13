@@ -137,7 +137,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             contentRect: NSRect(x: 0, y: 0, width: 480, height: 300),
             styleMask: [.titled, .closable, .resizable, .fullSizeContentView],
             backing: .buffered, defer: false)
-        self.settingsWindow.title = "Settings"
+        self.settingsWindow.title = String(localized: "Settings")
         self.settingsWindow.isReleasedWhenClosed = false
         self.settingsWindow.toolbarStyle = .preference
         

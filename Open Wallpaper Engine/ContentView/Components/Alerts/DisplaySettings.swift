@@ -74,7 +74,7 @@ struct DisplaySettings: SubviewOfContentView {
                                 Text(wp.project.title.isEmpty ? "No wallpaper" : wp.project.title)
                                     .font(.callout)
                                     .fontWeight(.medium)
-                                Text(wp.project.type.isEmpty ? "—" : wp.project.type.capitalized)
+                                Text(wp.project.type.isEmpty ? "—" : localizedWallpaperType(wp.project.type))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -192,7 +192,7 @@ private struct MonitorRectangle: View {
                             .fontWeight(.medium)
                     }
                     if isEnabled {
-                        Text(wallpaperTitle.isEmpty ? "No wallpaper" : wallpaperTitle)
+                        Text(wallpaperTitle.isEmpty ? String(localized: "No wallpaper") : wallpaperTitle)
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
@@ -204,5 +204,15 @@ private struct MonitorRectangle: View {
                 }
                 .padding(4)
             }
+    }
+}
+
+private func localizedWallpaperType(_ type: String) -> String {
+    switch type.lowercased() {
+    case "scene": return String(localized: "Scene")
+    case "video": return String(localized: "Video")
+    case "web": return String(localized: "Web")
+    case "application": return String(localized: "Application")
+    default: return type.capitalized
     }
 }

@@ -27,10 +27,10 @@ enum WorkshopSortOrder: Int, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .trending: return "Trending"
-        case .mostRecent: return "Most Recent"
-        case .mostPopular: return "Most Popular"
-        case .mostSubscribed: return "Most Subscribed"
+        case .trending: return String(localized: "Trending")
+        case .mostRecent: return String(localized: "Most Recent")
+        case .mostPopular: return String(localized: "Most Popular")
+        case .mostSubscribed: return String(localized: "Most Subscribed")
         }
     }
 
@@ -290,11 +290,16 @@ enum WorkshopAPIError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .invalidURL: return "Invalid API URL"
-        case .requestFailed: return "API request failed — check your network connection"
-        case .noAPIKey: return "Steam Web API key required.\nGet a free key at steamcommunity.com/dev/apikey\nthen enter it below."
-        case .invalidAPIKey: return "Invalid API key.\nGet a valid key at steamcommunity.com/dev/apikey"
-        case .httpError(let code): return "Steam API returned HTTP \(code)"
+        case .invalidURL:
+            return String(localized: "Invalid API URL")
+        case .requestFailed:
+            return String(localized: "API request failed — check your network connection")
+        case .noAPIKey:
+            return String(localized: "Steam Web API key required.\nGet a free key at steamcommunity.com/dev/apikey\nthen enter it below.")
+        case .invalidAPIKey:
+            return String(localized: "Invalid API key.\nGet a valid key at steamcommunity.com/dev/apikey")
+        case .httpError(let code):
+            return String(format: String(localized: "Steam API returned HTTP %d"), code)
         }
     }
 }

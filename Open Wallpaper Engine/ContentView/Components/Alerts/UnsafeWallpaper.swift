@@ -15,19 +15,13 @@ struct UnsafeWallpaper: View {
     @State var seconds: Int = 5
     @State var isIgnored = false
     
-    var typeStringDict: [String : String] =
-    [
-        "web": "Web Page",
-        "application": "Application"
-    ]
-    
     init(wallpaper: WEWallpaper) {
         self.wallpaper = wallpaper
     }
     
     var body: some View {
         VStack(spacing: 0) {
-            Text("Opening Unkown \(typeStringDict[wallpaper.project.type.lowercased()] ?? "Wallpaper")")
+            Text(String(format: String(localized: "Opening Unknown %@"), wallpaperTypeName))
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()
                 .font(.title2)
@@ -41,10 +35,12 @@ struct UnsafeWallpaper: View {
                     .shadow(radius: 6)
                     .frame(maxWidth: 100)
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("You are about to open an external \((typeStringDict[wallpaper.project.type.lowercased()] ?? "unkown source type file").lowercased()) as a wallpaper:")
+                    Text(String(format: String(localized: "You are about to open an external %@ as a wallpaper:"), wallpaperTypeName.lowercased()))
                     Text("\(wallpaper.wallpaperDirectory.path(percentEncoded: false) + wallpaper.project.file)").bold()
                     Text("Open Wallpaper Engine has no control over this file, you must ensure that it comes from a rellable source before proceeding.")
-                    Text(seconds > 0 ? "Please wait \(seconds) seconds." : "Please be aware of malware.")
+                    Text(seconds > 0
+                         ? String(format: String(localized: "Please wait %d seconds."), seconds)
+                         : String(localized: "Please be aware of malware."))
                     Toggle("Don't ask again for this wallpaper", isOn: $isIgnored)
                 }
                 .frame(maxWidth: .infinity)
@@ -93,6 +89,14 @@ struct UnsafeWallpaper: View {
                     self.seconds -= 1
                 }
             }
+        }
+    }
+
+    private var wallpaperTypeName: String {
+        switch wallpaper.project.type.lowercased() {
+        case "web": return String(localized: "Web Page")
+        case "application": return String(localized: "Application")
+        default: return String(localized: "Wallpaper")
         }
     }
 }

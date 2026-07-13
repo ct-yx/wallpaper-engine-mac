@@ -71,7 +71,7 @@ private struct SteamCmdNotInstalledView: View {
                 panel.canChooseFiles = true
                 panel.canChooseDirectories = false
                 panel.allowsMultipleSelection = false
-                panel.message = "Select the steamcmd executable"
+                panel.message = String(localized: "Select the steamcmd executable")
                 if panel.runModal() == .OK, let url = panel.url {
                     steamCmd.setCustomPath(url.path)
                 }
@@ -236,9 +236,9 @@ private struct WorkshopBrowserView: View {
             // Tag filters
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 4) {
-                    tagGroup("Rating:", WorkshopViewModel.contentRatingTags)
+                    tagGroup(String(localized: "Rating:"), WorkshopViewModel.contentRatingTags)
                     Divider().frame(height: 20)
-                    tagGroup("Type:", WorkshopViewModel.typeTags)
+                    tagGroup(String(localized: "Type:"), WorkshopViewModel.typeTags)
                     Divider().frame(height: 20)
                     tagGroup("", WorkshopViewModel.genreTags)
                 }
@@ -329,7 +329,7 @@ private struct WorkshopBrowserView: View {
                     viewModel.currentPage = 1
                     Task { await viewModel.search() }
                 } label: {
-                    Text(tag)
+                    Text(localizedTagName(tag))
                         .font(.caption)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
@@ -339,6 +339,43 @@ private struct WorkshopBrowserView: View {
                 }
                 .buttonStyle(.plain)
             }
+        }
+    }
+
+    private func localizedTagName(_ tag: String) -> String {
+        switch tag {
+        case "Everyone": return String(localized: "Everyone")
+        case "Questionable": return String(localized: "Questionable")
+        case "Mature": return String(localized: "Mature")
+        case "Scene": return String(localized: "Scene")
+        case "Video": return String(localized: "Video")
+        case "Web": return String(localized: "Web")
+        case "Application": return String(localized: "Application")
+        case "Abstract": return String(localized: "Abstract")
+        case "Animal": return String(localized: "Animal")
+        case "Anime": return String(localized: "Anime")
+        case "Cartoon": return String(localized: "Cartoon")
+        case "CGI": return String(localized: "CGI")
+        case "Cyberpunk": return String(localized: "Cyberpunk")
+        case "Fantasy": return String(localized: "Fantasy")
+        case "Game": return String(localized: "Game")
+        case "Girls": return String(localized: "Girls")
+        case "Guys": return String(localized: "Guys")
+        case "Landscape": return String(localized: "Landscape")
+        case "Medieval": return String(localized: "Medieval")
+        case "Memes": return String(localized: "Memes")
+        case "MMD": return String(localized: "MMD")
+        case "Music": return String(localized: "Music")
+        case "Nature": return String(localized: "Nature")
+        case "Pixel Art": return String(localized: "Pixel Art")
+        case "Relaxing": return String(localized: "Relaxing")
+        case "Retro": return String(localized: "Retro")
+        case "Sci-Fi": return String(localized: "Sci-Fi")
+        case "Sports": return String(localized: "Sports")
+        case "Technology": return String(localized: "Technology")
+        case "Television": return String(localized: "Television")
+        case "Vehicle": return String(localized: "Vehicle")
+        default: return tag
         }
     }
 }

@@ -42,6 +42,40 @@ enum GSAppearance: String, CaseIterable, Identifiable, Codable {
 enum GSLocalization: String, CaseIterable, Identifiable, Codable {
     var id: Self { self }
     case en_US, zh_CN, followSystem
+
+    fileprivate var appleLanguages: [String]? {
+        switch self {
+        case .en_US:
+            return ["en"]
+        case .zh_CN:
+            return ["zh-Hans"]
+        case .followSystem:
+            return nil
+        }
+    }
+}
+
+enum AppLocalization {
+    private static let globalSettingsKey = "GlobalSettings"
+    private static let appleLanguagesKey = "AppleLanguages"
+
+    /// Applies the language chosen in Settings before localized UI is created.
+    static func applySavedLanguage() {
+        guard let data = UserDefaults.standard.data(forKey: globalSettingsKey),
+              let settings = try? JSONDecoder().decode(GlobalSettings.self, from: data) else {
+            return
+        }
+        apply(settings.language)
+    }
+
+    /// Uses an app-scoped `AppleLanguages` override, leaving the system language unchanged.
+    static func apply(_ language: GSLocalization) {
+        if let languages = language.appleLanguages {
+            UserDefaults.standard.set(languages, forKey: appleLanguagesKey)
+        } else {
+            UserDefaults.standard.removeObject(forKey: appleLanguagesKey)
+        }
+    }
 }
 
 enum GSVideoFramework: String, CaseIterable, Identifiable, Codable {
@@ -110,7 +144,13 @@ struct GlobalSettings: Codable, Equatable {
 class GlobalSettingsViewModel: ObservableObject {
     @Published var settings: GlobalSettings
     {
-        didSet { save(); validate() }
+        didSet {
+            save()
+            if oldValue.language != settings.language {
+                AppLocalization.apply(settings.language)
+            }
+            validate()
+        }
     }
     
     @Published var selection = 0
@@ -130,6 +170,8 @@ class GlobalSettingsViewModel: ObservableObject {
         } else {
             self.settings = GlobalSettings()
         }
+
+        AppLocalization.apply(settings.language)
         
         // Add observers
         self.didFinishLaunchingNotificationCancellable =
@@ -221,7 +263,6 @@ class GlobalSettingsViewModel: ObservableObject {
             print("Failed to encode global settings")
             return
         }
-        print(String(describing: String(data: data, encoding: .utf8)))
         UserDefaults.standard.set(data, forKey: "GlobalSettings")
     }
     

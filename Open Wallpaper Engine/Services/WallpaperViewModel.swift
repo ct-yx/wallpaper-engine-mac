@@ -122,18 +122,18 @@ class WallpaperViewModel: ObservableObject {
             if newValue == 0.0 {
                 if let menu = AppDelegate.shared.statusItem?.menu {
                     for (index, item) in menu.items.enumerated() {
-                        if item.title == "Pause" {
+                        if item.action == #selector(AppDelegate.shared.pause) {
                             menu.items[index] =
-                                .init(title: "Resume", systemImage: "play.fill", action: #selector(AppDelegate.shared.resume), keyEquivalent: "")
+                                .init(title: String(localized: "Resume"), systemImage: "play.fill", action: #selector(AppDelegate.shared.resume), keyEquivalent: "")
                         }
                     }
                 }
             } else {
                 if let menu = AppDelegate.shared.statusItem?.menu {
                     for (index, item) in menu.items.enumerated() {
-                        if item.title == "Resume" {
+                        if item.action == #selector(AppDelegate.shared.resume) {
                             menu.items[index] =
-                                .init(title: "Pause", systemImage: "pause.fill", action: #selector(AppDelegate.shared.pause), keyEquivalent: "")
+                                .init(title: String(localized: "Pause"), systemImage: "pause.fill", action: #selector(AppDelegate.shared.pause), keyEquivalent: "")
                         }
                     }
                 }
@@ -150,7 +150,7 @@ class WallpaperViewModel: ObservableObject {
             if newValue == 0.0 {
                 if let menu = AppDelegate.shared.statusItem?.menu {
                     for (index, item) in menu.items.enumerated() {
-                        if item.title == "Mute" {
+                        if item.action == #selector(AppDelegate.shared.mute) {
                             menu.items[index] =
                                 .init(title: String(localized: "Unmute"), systemImage: "speaker.fill", action: #selector(AppDelegate.shared.unmute), keyEquivalent: "")
                         }
@@ -159,7 +159,7 @@ class WallpaperViewModel: ObservableObject {
             } else {
                 if let menu = AppDelegate.shared.statusItem?.menu {
                     for (index, item) in menu.items.enumerated() {
-                        if item.title == "Unmute" {
+                        if item.action == #selector(AppDelegate.shared.unmute) {
                             menu.items[index] =
                                 .init(title: String(localized: "Mute"), systemImage: "speaker.slash.fill", action: #selector(AppDelegate.shared.mute), keyEquivalent: "")
                         }
