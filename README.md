@@ -35,6 +35,12 @@ This project is built on top of the work of:
 
 Licensed under [GPL-3.0](LICENSE), same as the original project.
 
+## What's New in 0.8.2
+
+### Simplified Chinese Support
+
+The app now includes a complete Simplified Chinese interface, including the Workshop browser, Steam login and download status, multi-display controls, import errors, and status-bar menus. Choose **Chinese Simplified** in Settings > General; the change applies the next time the app opens.
+
 ## What's New in 0.8.1
 
 ### Multi-Display Support

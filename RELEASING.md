@@ -9,8 +9,8 @@ This project distributes GitHub Release archives with an ad-hoc macOS signature.
 3. Create and push a matching tag, for example:
 
    ```sh
-   git tag v0.8.1
-   git push origin v0.8.1
+   git tag v0.8.2
+   git push origin v0.8.2
    ```
 
 4. The `Release macOS app` workflow builds the app without an Apple development certificate, applies an ad-hoc signature, creates a ZIP archive and SHA-256 checksum, then publishes both to GitHub Releases.
