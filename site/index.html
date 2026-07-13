@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Open Wallpaper Engine 是一款开源 macOS 动态壁纸应用，支持 Steam 创意工坊、场景、视频和网页壁纸。">
+    <meta name="theme-color" content="#10121f">
+    <meta property="og:title" content="Open Wallpaper Engine for macOS">
+    <meta property="og:description" content="开源的 macOS 动态壁纸应用，支持 Steam 创意工坊、场景、视频与网页壁纸。">
+    <meta property="og:image" content="https://raw.githubusercontent.com/ct-yx/wallpaper-engine-mac/main/resources/wallpaper.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ct-yx.github.io/wallpaper-engine-mac/">
+    <link rel="canonical" href="https://ct-yx.github.io/wallpaper-engine-mac/">
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+    <title>Open Wallpaper Engine · macOS 动态壁纸</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#content">跳到主要内容</a>
+
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="Open Wallpaper Engine 首页">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>Open Wallpaper Engine</span>
+      </a>
+      <nav aria-label="主导航">
+        <a href="#features">功能</a>
+        <a href="#showcase">预览</a>
+        <a href="#download">下载</a>
+        <a class="nav-github" href="https://github.com/ct-yx/wallpaper-engine-mac" target="_blank" rel="noreferrer">
+          <svg aria-hidden="true" viewBox="0 0 16 16"><path d="M8 0a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82A7.65 7.65 0 0 1 8 4.8c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8 8 0 0 0 8 0Z"/></svg>
+          GitHub
+        </a>
+      </nav>
+    </header>
+
+    <main id="content">
+      <section class="hero" id="top">
+        <div class="hero-glow hero-glow-one" aria-hidden="true"></div>
+        <div class="hero-glow hero-glow-two" aria-hidden="true"></div>
+        <div class="hero-copy">
+          <p class="eyebrow">OPEN SOURCE · FOR macOS</p>
+          <h1>让每一块屏幕<br>都有自己的<span>动态宇宙</span></h1>
+          <p class="hero-lede">Open Wallpaper Engine 是一个开源的 macOS 动态壁纸应用。浏览 Steam 创意工坊，将场景、视频和网页壁纸带到你的桌面。</p>
+          <div class="hero-actions">
+            <a class="button button-primary" data-release-download href="https://github.com/ct-yx/wallpaper-engine-mac/releases/latest">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"/></svg>
+              <span>下载 macOS 版本</span>
+            </a>
+            <a class="button button-quiet" href="https://github.com/ct-yx/wallpaper-engine-mac" target="_blank" rel="noreferrer">查看源代码 <span aria-hidden="true">↗</span></a>
+          </div>
+          <div class="release-line" aria-live="polite">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span>最新版本：<strong data-release-version>v0.8.1</strong></span>
+            <span class="release-separator" aria-hidden="true">·</span>
+            <span>macOS 13+</span>
+          </div>
+        </div>
+
+        <div class="hero-visual" aria-label="Open Wallpaper Engine 应用预览">
+          <div class="visual-backdrop"></div>
+          <div class="app-window">
+            <div class="window-bar"><span></span><span></span><span></span><p>Open Wallpaper Engine</p></div>
+            <img src="https://raw.githubusercontent.com/ct-yx/wallpaper-engine-mac/main/resources/wallpaper-with-windows.png" alt="应用在多窗口桌面上的动态壁纸预览">
+          </div>
+          <div class="float-card float-card-display">
+            <span class="float-icon screens-icon" aria-hidden="true"></span>
+            <span><b>多显示器</b><small>为每块屏幕独立设置</small></span>
+          </div>
+          <div class="float-card float-card-workshop">
+            <span class="float-icon workshop-icon" aria-hidden="true">✦</span>
+            <span><b>Steam Workshop</b><small>发现新壁纸</small></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="trust-strip" aria-label="项目特性">
+        <div><span aria-hidden="true">⌘</span><b>原生 macOS 体验</b></div>
+        <div><span aria-hidden="true">⌁</span><b>GitHub Release 分发</b></div>
+        <div><span aria-hidden="true">↗</span><b>GPL-3.0 开源</b></div>
+        <div><span aria-hidden="true">∞</span><b>不依赖 7 天个人证书</b></div>
+      </section>
+
+      <section class="section feature-section" id="features">
+        <div class="section-heading">
+          <p class="eyebrow">BUILT FOR YOUR DESKTOP</p>
+          <h2>不只是一张静态图片</h2>
+          <p>把 Wallpaper Engine 创意工坊里的优秀作品，带到 macOS 的每一个桌面空间。</p>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card feature-card-large">
+            <div class="card-icon icon-orbit" aria-hidden="true"><i></i><i></i><i></i></div>
+            <p class="card-number">01</p>
+            <h3>场景、视频与网页壁纸</h3>
+            <p>支持视频文件、HTML/WebGL 网页壁纸和静态场景图层；无法完整渲染的场景会优雅回退到预览图。</p>
+            <div class="mini-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          </article>
+          <article class="feature-card">
+            <div class="card-icon icon-screens" aria-hidden="true"><i></i><i></i></div>
+            <p class="card-number">02</p>
+            <h3>多显示器 · 多桌面</h3>
+            <p>不同屏幕设置不同壁纸，切换 macOS Spaces 时持续播放，不打断你的沉浸感。</p>
+          </article>
+          <article class="feature-card">
+            <div class="card-icon icon-workshop" aria-hidden="true">✦</div>
+            <p class="card-number">03</p>
+            <h3>内置创意工坊浏览</h3>
+            <p>搜索、筛选、排序和下载一气呵成。也支持本地文件夹与 ZIP 壁纸包导入。</p>
+          </article>
+          <article class="feature-card feature-card-wide">
+            <div>
+              <p class="card-number">04</p>
+              <h3>按你的节奏播放</h3>
+              <p>状态栏快速切换最近壁纸；其他应用获得焦点时可暂停、静音或停止播放，兼顾桌面效果与性能。</p>
+            </div>
+            <div class="performance-orb" aria-hidden="true"><span>FPS</span><b>60</b><i></i></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section showcase-section" id="showcase">
+        <div class="section-heading heading-with-link">
+          <div>
+            <p class="eyebrow">A GLIMPSE INSIDE</p>
+            <h2>在桌面，也在你的工作流里</h2>
+          </div>
+          <a href="https://github.com/ct-yx/wallpaper-engine-mac/tree/main/resources" target="_blank" rel="noreferrer">查看全部截图 <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="showcase-grid">
+          <figure class="showcase-main">
+            <img src="https://raw.githubusercontent.com/ct-yx/wallpaper-engine-mac/main/resources/wallpaper.png" alt="Open Wallpaper Engine 的壁纸选择界面">
+            <figcaption><span>桌面预览</span><b>选择一张，进入你的空间</b></figcaption>
+          </figure>
+          <figure class="showcase-side">
+            <img src="https://raw.githubusercontent.com/ct-yx/wallpaper-engine-mac/main/resources/import-panel.png" alt="Open Wallpaper Engine 的导入面板">
+            <figcaption><span>导入</span><b>文件夹与 ZIP</b></figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section getting-started" id="download">
+        <div class="download-panel">
+          <div class="download-copy">
+            <p class="eyebrow">GET STARTED</p>
+            <h2>三步，让桌面动起来。</h2>
+            <p>发布包由 GitHub Actions 自动构建并以 ad-hoc 方式签名，不受 Apple Personal Team 七天描述文件期限影响。</p>
+            <a class="button button-primary" data-release-download href="https://github.com/ct-yx/wallpaper-engine-mac/releases/latest">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3"/></svg>
+              下载 <span data-release-version>v0.8.1</span>
+            </a>
+            <a class="checksum-link" data-release-page href="https://github.com/ct-yx/wallpaper-engine-mac/releases/latest">查看校验文件与全部版本 <span aria-hidden="true">↗</span></a>
+          </div>
+          <ol class="steps-list">
+            <li><span>01</span><div><b>下载并解压</b><p>从 GitHub Release 下载最新 ZIP 包，旁边提供 SHA-256 校验文件。</p></div></li>
+            <li><span>02</span><div><b>将应用移到“应用程序”</b><p>首次打开若遇到系统提示，请在“隐私与安全性”中确认打开。</p></div></li>
+            <li><span>03</span><div><b>连接你的壁纸库</b><p>使用内置 Workshop，或直接导入已下载的文件夹和 ZIP 壁纸包。</p></div></li>
+          </ol>
+        </div>
+        <aside class="notice" role="note">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.3 3.84 2.57 17a2 2 0 0 0 1.73 3h15.4a2 2 0 0 0 1.73-3L13.7 3.84a2 2 0 0 0-3.4 0Z"/></svg>
+          <p><b>关于首次启动</b>：为避免过期的个人开发者证书，Release 使用 ad-hoc 签名，尚未经过 Apple 公证。macOS 可能在首次打开时显示安全确认；这不影响应用正常使用。</p>
+        </aside>
+      </section>
+
+      <section class="contribute-section">
+        <div>
+          <p class="eyebrow">KEEP IT MOVING</p>
+          <h2>喜欢这个项目？<br>让它继续生长。</h2>
+        </div>
+        <div class="contribute-actions">
+          <a class="button button-light" href="https://github.com/ct-yx/wallpaper-engine-mac" target="_blank" rel="noreferrer">
+            <svg aria-hidden="true" viewBox="0 0 16 16"><path d="M8 0a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82A7.65 7.65 0 0 1 8 4.8c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8 8 0 0 0 8 0Z"/></svg>
+            Star on GitHub
+          </a>
+          <a class="support-link" href="https://www.ifdian.net/a/Ct_yx?utm_source=copylink&amp;utm_medium=link" target="_blank" rel="noreferrer">爱发电支持 <span aria-hidden="true">↗</span></a>
+          <a class="support-link" href="https://buymeacoffee.com/ctyx" target="_blank" rel="noreferrer">Buy Me a Coffee <span aria-hidden="true">↗</span></a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Open Wallpaper Engine</span></a>
+      <p>非 Wallpaper Engine 官方产品 · 以 <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noreferrer">GPL-3.0</a> 发布</p>
+      <div><a href="https://github.com/ct-yx/wallpaper-engine-mac/issues" target="_blank" rel="noreferrer">反馈问题</a><a href="https://github.com/ct-yx/wallpaper-engine-mac" target="_blank" rel="noreferrer">源码</a></div>
+    </footer>
+  </body>
+</html>

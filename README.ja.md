@@ -9,6 +9,10 @@ Open Wallpaper Engine（パッチ版）
 
 > **注意：** 本プロジェクトは Steam の商用版 Wallpaper Engine とは無関係です。Steam Workshop の壁紙アセットを表示できるオープンソースの macOS アプリケーションです。
 
+## プロジェクトサイト
+
+スクリーンショット、主な機能、最新のダウンロードは[プロジェクトサイト](https://ct-yx.github.io/wallpaper-engine-mac/)をご覧ください。
+
 ## ビルド済みリリース
 
 最新の macOS ビルドは [Releases](../../releases) からダウンロードできます。リリースアーカイブは ad-hoc 署名のため、期限切れの Personal Team プロビジョニングプロファイルに依存しません。ただし Apple の公証は行われていないため、初回起動時に「プライバシーとセキュリティ」で開くことを確認する必要があります。

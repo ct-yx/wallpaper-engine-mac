@@ -9,6 +9,10 @@ A patched fork of [Open Wallpaper Engine](https://github.com/MrWindDog/wallpaper
 
 > **Note:** This is NOT affiliated with the commercial Wallpaper Engine on Steam. This is an open-source macOS app that can display wallpaper assets from Wallpaper Engine's Steam Workshop.
 
+## Project Website
+
+Visit the [project website](https://ct-yx.github.io/wallpaper-engine-mac/) for screenshots, feature highlights, and the latest download.
+
 ## Prebuilt Releases
 
 Download the latest macOS build from [Releases](../../releases). Release archives are ad-hoc signed so they do not depend on an expiring Personal Team provisioning profile. They are not notarized by Apple; on first launch, macOS may require you to confirm the app in **Privacy & Security**.

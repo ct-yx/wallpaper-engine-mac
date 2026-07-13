@@ -9,6 +9,10 @@ Open Wallpaper Engine（修補版）
 
 > **注意：** 本專案與 Steam 上的商業版 Wallpaper Engine 無關。這是一個開源的 macOS 應用程式，可顯示來自 Wallpaper Engine Steam 創意工坊的桌布素材。
 
+## 專案網站
+
+前往[專案網站](https://ct-yx.github.io/wallpaper-engine-mac/)查看螢幕截圖、功能介紹與最新下載。
+
 ## 預先編譯的發行版本
 
 可從 [Releases](../../releases) 下載最新的 macOS 版本。發行封包採用 ad-hoc 簽署，不依賴會過期的 Personal Team 佈建描述檔；但未經 Apple 公證，首次開啟時 macOS 可能要求您在「隱私權與安全性」中確認開啟。
