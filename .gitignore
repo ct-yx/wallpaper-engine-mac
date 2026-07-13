@@ -1,0 +1,17 @@
+# Xcode
+
+## User settings
+xcuserdata/
+
+## Build products
+build/
+DerivedData/
+dist/
+.release-build/
+
+## OS junk
+.DS_Store
+Thumbs.db
+
+## Playwright MCP
+.playwright-mcp/

@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build macOS app
+    runs-on: macos-14
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Validate project metadata
+        run: |
+          set -euo pipefail
+          plutil -lint "Open-Wallpaper-Engine-Info.plist"
+          plutil -lint "Open Wallpaper Engine/Open_Wallpaper_Engine.entitlements"
+
+      - name: Build without an Apple development certificate
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project "Open Wallpaper Engine.xcodeproj" \
+            -scheme "Open Wallpaper Engine" \
+            -configuration Release \
+            -derivedDataPath "$RUNNER_TEMP/open-wallpaper-engine-derived-data" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build
