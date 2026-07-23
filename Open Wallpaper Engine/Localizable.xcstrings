@@ -2595,8 +2595,10 @@
     "Log in to Steam before downloading wallpapers." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "下载壁纸前请先登录 Steam。" } } } },
     "Set Up Downloads" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "配置下载" } } } },
     "Downloads Ready" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "下载已就绪" } } } },
+    "Saved Steam Session" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已保存的 Steam 会话" } } } },
     "SteamCMD is configured and its cached Steam session will be reused for downloads." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "SteamCMD 已配置完成；下载时将复用缓存的 Steam 登录会话。" } } } },
     "SteamCMD is only required to download wallpapers. Browsing and viewing details use the Steam Web API." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "仅下载壁纸时需要 SteamCMD；浏览和查看详情使用 Steam Web API。" } } } },
+    "Your saved Steam session will be reused and checked only when you choose Download." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已保存的 Steam 会话会在你选择“下载”时才复用并验证。" } } } },
     "Done" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "完成" } } } },
     "View Details" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "查看详情" } } } }
   },

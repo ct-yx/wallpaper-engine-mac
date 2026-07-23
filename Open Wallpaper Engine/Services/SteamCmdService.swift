@@ -12,12 +12,13 @@ class SteamCmdService: ObservableObject {
     enum DownloadState: Equatable {
         case downloading(status: String)
         case completed
+        case requiresLogin(String)
         case failed(String)
     }
 
     private static let lastUsernameKey = "SteamLastUsername"
+    private static let cachedSessionKey = "SteamCachedSessionLikelyAvailable"
     private let downloadQueue = DispatchQueue(label: "steamcmd.download.queue", qos: .userInitiated)
-    private var hasCheckedCachedSessionForDownload = false
     private let maximumDownloadDuration: TimeInterval = 30 * 60
 
     init() {
@@ -38,9 +39,10 @@ class SteamCmdService: ObservableObject {
         let outputPipe = Pipe()
         let inputPipe = input == nil ? nil : Pipe()
         process.executableURL = steamCmdExecutableURL(cmdPath: cmdPath)
-        // SteamCMD keeps its account configuration and login token relative to
-        // its working directory.  Always use its install directory so login
-        // state survives app relaunches as well as download commands.
+        // Always run the executable from its own directory so standalone
+        // scripts and Homebrew wrappers can find their bundled libraries.
+        // SteamCMD itself persists account data in the user's Steam support
+        // directory, independently of this working directory.
         process.currentDirectoryURL = steamCmdWorkingDirectory(cmdPath: cmdPath)
         process.arguments = arguments
         if let inputPipe {
@@ -168,26 +170,24 @@ class SteamCmdService: ObservableObject {
 
     var isInstalled: Bool { steamCmdPath != nil }
 
-    /// Browsing uses the Web API; only downloads need a locally configured,
-    /// authenticated SteamCMD session.
-    var isReadyForDownloads: Bool { isInstalled && isLoggedIn }
+    /// Browsing uses the Web API; downloads need SteamCMD plus either a
+    /// verified session from this launch or a stored session from a prior
+    /// successful login.  The latter is checked only by the actual download
+    /// command, so opening a detail page never starts SteamCMD.
+    var isReadyForDownloads: Bool { isInstalled && (isLoggedIn || hasSavedSessionForDownloads) }
+
+    var hasSavedSessionForDownloads: Bool {
+        guard isInstalled, !steamUsername.isEmpty else { return false }
+        let defaults = UserDefaults.standard
+        // Existing installs only have the username key. Treat that as a
+        // migration candidate once, then record subsequent verification.
+        guard defaults.object(forKey: Self.cachedSessionKey) != nil else {
+            return true
+        }
+        return defaults.bool(forKey: Self.cachedSessionKey)
+    }
 
     @Published var pathError: String?
-
-    /// Verify the saved SteamCMD session only after the user starts the
-    /// download flow.  Browsing Workshop pages must never launch SteamCMD.
-    func restoreCachedSessionForDownloadIfNeeded() {
-        guard !hasCheckedCachedSessionForDownload,
-              isInstalled,
-              !isLoggedIn,
-              !isLoggingIn,
-              !steamUsername.isEmpty else {
-            return
-        }
-
-        hasCheckedCachedSessionForDownload = true
-        loginWithCachedSession(username: steamUsername)
-    }
 
     func setCustomPath(_ path: String) {
         guard FileManager.default.fileExists(atPath: path) else {
@@ -204,7 +204,6 @@ class SteamCmdService: ObservableObject {
         UserDefaults.standard.set(path, forKey: "SteamCmdPath")
         isLoggedIn = false
         steamCmdPath = path
-        hasCheckedCachedSessionForDownload = false
     }
 
     /// Attempt login with username and password. Steam Guard code is optional.
@@ -231,16 +230,18 @@ class SteamCmdService: ObservableObject {
 
             DispatchQueue.main.async {
                 self.isLoggingIn = false
-                if output.contains("Logged in OK") || (output.contains("OK") && exitCode == 0) {
+                if self.authenticationSucceeded(output: output, exitCode: exitCode) {
                     self.isLoggedIn = true
                     self.loginError = nil
-                    UserDefaults.standard.set(username, forKey: Self.lastUsernameKey)
-                    self.hasCheckedCachedSessionForDownload = true
-                } else if output.contains("Steam Guard") || output.contains("Two-factor") {
+                    self.recordCachedSession(username: username, isAvailable: true)
+                } else if self.outputRequiresSteamGuard(output) {
+                    self.recordCachedSession(username: username, isAvailable: false)
                     self.loginError = String(localized: "Steam Guard code required")
                 } else if output.contains("Invalid Password") || output.contains("FAILED") {
+                    self.recordCachedSession(username: username, isAvailable: false)
                     self.loginError = String(localized: "Invalid username or password")
                 } else {
+                    self.recordCachedSession(username: username, isAvailable: false)
                     self.loginError = String(localized: "Login failed. Check credentials and try again.")
                 }
             }
@@ -262,11 +263,13 @@ class SteamCmdService: ObservableObject {
 
             DispatchQueue.main.async {
                 self.isLoggingIn = false
-                if output.contains("Logged in OK") || (output.contains("OK") && exitCode == 0) {
+                if self.authenticationSucceeded(output: output, exitCode: exitCode) {
                     self.isLoggedIn = true
                     self.loginError = nil
-                    UserDefaults.standard.set(username, forKey: Self.lastUsernameKey)
+                    self.recordCachedSession(username: username, isAvailable: true)
                 } else {
+                    self.isLoggedIn = false
+                    self.recordCachedSession(username: username, isAvailable: false)
                     self.loginError = String(localized: "Cached session expired. Please log in with password.")
                 }
             }
@@ -282,6 +285,7 @@ class SteamCmdService: ObservableObject {
 
         downloadProgress[workshopId] = .downloading(status: String(localized: "Queued"))
         let username = steamUsername
+        let canUseSavedSession = isLoggedIn || hasSavedSessionForDownloads
 
         downloadQueue.async { [weak self] in
             guard let self = self else { return }
@@ -298,9 +302,9 @@ class SteamCmdService: ObservableObject {
                 return
             }
 
-            guard self.isLoggedIn, !username.isEmpty else {
+            guard canUseSavedSession, !username.isEmpty else {
                 DispatchQueue.main.async {
-                    self.downloadProgress[workshopId] = .failed(
+                    self.downloadProgress[workshopId] = .requiresLogin(
                         String(localized: "Log in to Steam before downloading wallpapers.")
                     )
                 }
@@ -325,11 +329,14 @@ class SteamCmdService: ObservableObject {
 
             // Read output in real-time for progress updates
             var fullOutput = ""
+            let outputLock = NSLock()
             let handle = outputPipe.fileHandleForReading
             handle.readabilityHandler = { [weak self] fileHandle in
                 let data = fileHandle.availableData
                 guard !data.isEmpty, let line = String(data: data, encoding: .utf8) else { return }
+                outputLock.lock()
                 fullOutput += line
+                outputLock.unlock()
 
                 let status = self?.parseProgress(line) ?? nil
                 if let status = status {
@@ -372,7 +379,10 @@ class SteamCmdService: ObservableObject {
             handle.readabilityHandler = nil
             // Read any remaining data
             let remaining = handle.readDataToEndOfFile()
+            outputLock.lock()
             if let str = String(data: remaining, encoding: .utf8) { fullOutput += str }
+            let output = fullOutput
+            outputLock.unlock()
 
             let exitCode = process.terminationStatus
 
@@ -389,9 +399,20 @@ class SteamCmdService: ObservableObject {
                 return
             }
 
+            if self.outputIndicatesLoginFailure(output) {
+                DispatchQueue.main.async {
+                    self.isLoggedIn = false
+                    self.recordCachedSession(username: username, isAvailable: false)
+                    self.downloadProgress[workshopId] = .requiresLogin(
+                        String(localized: "Cached session expired. Please log in with password.")
+                    )
+                }
+                return
+            }
+
             let failure: String
-            if fullOutput.contains("ERROR") || fullOutput.contains("FAILED") {
-                failure = fullOutput.components(separatedBy: "\n")
+            if output.contains("ERROR") || output.contains("FAILED") {
+                failure = output.components(separatedBy: "\n")
                     .first(where: { $0.contains("ERROR") || $0.contains("FAILED") })
                     ?? String(localized: "Unknown error")
             } else if exitCode != 0 {
@@ -403,6 +424,35 @@ class SteamCmdService: ObservableObject {
                 self.downloadProgress[workshopId] = .failed(failure)
             }
         }
+    }
+
+    private func recordCachedSession(username: String, isAvailable: Bool) {
+        let defaults = UserDefaults.standard
+        defaults.set(username, forKey: Self.lastUsernameKey)
+        defaults.set(isAvailable, forKey: Self.cachedSessionKey)
+    }
+
+    private func outputIndicatesLoginFailure(_ output: String) -> Bool {
+        let normalized = output.lowercased()
+        return normalized.contains("invalid password")
+            || normalized.contains("login failure")
+            || normalized.contains("failed to log in")
+            || normalized.contains("not logged in")
+            || normalized.contains("steam guard")
+            || normalized.contains("two-factor")
+    }
+
+    private func outputRequiresSteamGuard(_ output: String) -> Bool {
+        let normalized = output.lowercased()
+        return normalized.contains("steam guard") || normalized.contains("two-factor")
+    }
+
+    private func authenticationSucceeded(output: String, exitCode: Int32) -> Bool {
+        // SteamCMD emits unrelated `OK` lines while loading Steam API.  Only
+        // its explicit login confirmation proves a reusable account session.
+        exitCode == 0
+            && !outputIndicatesLoginFailure(output)
+            && output.localizedCaseInsensitiveContains("Logged in OK")
     }
 
     /// Returns true when SteamCMD has already downloaded an item into one of

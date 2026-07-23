@@ -596,6 +596,17 @@ private struct WorkshopItemDetailView: View {
             case .completed:
                 Label("Downloaded", systemImage: "checkmark.circle.fill")
                     .foregroundStyle(.green)
+            case .requiresLogin(let message):
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text(message)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                        .lineLimit(2)
+                    Button("Set Up Downloads") {
+                        isDownloadSetupPresented = true
+                    }
+                    .buttonStyle(.bordered)
+                }
             case .failed(let message):
                 VStack(alignment: .trailing, spacing: 4) {
                     Text(message)
@@ -655,7 +666,7 @@ private struct SteamDownloadSetupView: View {
 
     var body: some View {
         Group {
-            if steamCmd.isReadyForDownloads {
+            if steamCmd.isLoggedIn {
                 VStack(spacing: 14) {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 42))
@@ -663,6 +674,23 @@ private struct SteamDownloadSetupView: View {
                     Text("Downloads Ready")
                         .font(.title3.weight(.semibold))
                     Text("SteamCMD is configured and its cached Steam session will be reused for downloads.")
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(.secondary)
+                    Button("Done") {
+                        dismiss()
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+                .frame(width: 440, height: 260)
+                .padding()
+            } else if steamCmd.hasSavedSessionForDownloads {
+                VStack(spacing: 14) {
+                    Image(systemName: "person.badge.key.fill")
+                        .font(.system(size: 42))
+                        .foregroundStyle(.green)
+                    Text("Saved Steam Session")
+                        .font(.title3.weight(.semibold))
+                    Text("Your saved Steam session will be reused and checked only when you choose Download.")
                         .multilineTextAlignment(.center)
                         .foregroundStyle(.secondary)
                     Button("Done") {
@@ -685,13 +713,6 @@ private struct SteamDownloadSetupView: View {
                 SteamLoginView(steamCmd: steamCmd)
                     .frame(width: 480)
             }
-        }
-        .onAppear {
-            // Keep Workshop browsing independent from SteamCMD.  Once the
-            // user explicitly opens download setup, reuse a saved SteamCMD
-            // session automatically so a relaunch does not require entering
-            // credentials again.
-            steamCmd.restoreCachedSessionForDownloadIfNeeded()
         }
     }
 }

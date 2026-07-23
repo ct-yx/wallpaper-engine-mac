@@ -35,6 +35,14 @@ This project is built on top of the work of:
 
 Licensed under [GPL-3.0](LICENSE), same as the original project.
 
+## What's New in 0.9.9
+
+### SteamCMD Session Flow
+
+- **No detail-page session probe** — Opening a Workshop item or its download setup no longer launches SteamCMD merely to test a saved login.
+- **Direct download from a remembered session** — A previous successful Steam login enables the detail-page **Download** action immediately; SteamCMD validates that session only for the requested transfer.
+- **Useful expiry recovery** — An expired cached session now switches the item into a setup-required state instead of repeatedly retrying SteamCMD. Download output collection is synchronized to preserve its real failure message.
+
 ## What's New in 0.9.8
 
 ### Scene Transform and Particle Lifecycle Fidelity
