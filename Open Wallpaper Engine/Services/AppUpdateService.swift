@@ -180,9 +180,10 @@ final class AppUpdateService: ObservableObject {
         let (checksumData, checksumResponse) = try await URLSession.shared.data(for: checksumRequest)
         guard let response = checksumResponse as? HTTPURLResponse,
               response.statusCode == 200,
-              let expectedHash = String(data: checksumData, encoding: .utf8)?
+              let checksumText = String(data: checksumData, encoding: .utf8),
+              let expectedHash = checksumText
                 .split(whereSeparator: { $0.isWhitespace })
-                .first
+                .first?
                 .lowercased(),
               expectedHash.count == 64 else {
             throw UpdateError.invalidChecksum
