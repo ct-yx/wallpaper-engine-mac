@@ -66,6 +66,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         saveCurrentWallpaper()
         AppDelegate.shared.setPlacehoderWallpaper(with: wallpaperViewModel.currentWallpaper)
 
+        Task { @MainActor in
+            await AppUpdateService.shared.checkForUpdates()
+        }
+
         // 显示桌面壁纸
         for (_, window) in self.wallpaperWindows {
             window.orderFront(nil)
@@ -120,6 +124,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         NSApp.activate(ignoringOtherApps: true)
         self.settingsWindow.center()
         self.settingsWindow.makeKeyAndOrderFront(nil)
+    }
+
+    @objc func checkForUpdates() {
+        openSettingsWindow()
+        globalSettingsViewModel.selection = 1
+        settingsWindow.toolbar?.selectedItemIdentifier = SettingsToolbarIdentifiers.general
+
+        Task { @MainActor in
+            await AppUpdateService.shared.checkForUpdates()
+        }
     }
     
     @objc func openMainWindow() {

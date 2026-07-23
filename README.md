@@ -35,6 +35,13 @@ This project is built on top of the work of:
 
 Licensed under [GPL-3.0](LICENSE), same as the original project.
 
+## What's New in 0.9.1
+
+### In-App Updates
+
+- **Check from the app** — The app checks the latest GitHub Release after launch. You can also choose **Open Wallpaper Engine > Check for Updates…** or use the **Updates** section in Settings > General.
+- **Verified installation** — Updates download the published macOS ZIP and its SHA-256 file, verify the archive checksum and app signature, then replace the writable app bundle after quitting and relaunch the updated app.
+
 ## What's New in 0.9.0
 
 ### Workshop Browsing and Details

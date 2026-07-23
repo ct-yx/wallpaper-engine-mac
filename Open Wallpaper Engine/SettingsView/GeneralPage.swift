@@ -9,6 +9,7 @@ import SwiftUI
 
 struct GeneralPage: SettingsPage {
     @ObservedObject var viewModel: GlobalSettingsViewModel
+    @ObservedObject private var updateService = AppUpdateService.shared
     @State private var languageChangeRequiresRelaunch = false
     
     init(globalSettings viewModel: GlobalSettingsViewModel) {
@@ -42,6 +43,52 @@ struct GeneralPage: SettingsPage {
                 }
             } header: {
                 Label("Basic Setup", systemImage: "gearshape.fill")
+            }
+            // MARK: Updates
+            Section {
+                HStack(alignment: .firstTextBaseline) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Current Version")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(updateService.currentVersion)
+                            .font(.body.monospacedDigit())
+                    }
+                    Spacer()
+                    Button("Check for Updates") {
+                        Task {
+                            await updateService.checkForUpdates()
+                        }
+                    }
+                    .disabled(updateService.isBusy)
+                }
+
+                HStack(spacing: 8) {
+                    if updateService.isBusy {
+                        ProgressView()
+                            .controlSize(.small)
+                    }
+                    Text(updateService.statusText)
+                        .font(.caption)
+                        .foregroundStyle(updateStatusColor)
+                }
+
+                if let release = updateService.availableRelease {
+                    HStack {
+                        Button("Download and Install") {
+                            Task {
+                                await updateService.downloadAndInstall()
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(updateService.isBusy)
+
+                        Link("View Release", destination: release.pageURL)
+                            .font(.caption)
+                    }
+                }
+            } header: {
+                Label("Updates", systemImage: "arrow.down.circle.fill")
             }
             // MARK: macOS
             Section {
@@ -116,5 +163,12 @@ struct GeneralPage: SettingsPage {
                 Label("Reset", systemImage: "exclamationmark.triangle.fill")
             }
         }.formStyle(.grouped)
+    }
+
+    private var updateStatusColor: Color {
+        if case .failed = updateService.state {
+            return .red
+        }
+        return .secondary
     }
 }

@@ -17,6 +17,7 @@ extension AppDelegate {
             .init(title: String(localized: "About Open Wallpaper Engine"), action: #selector(self.showAboutUs), keyEquivalent: ""),
             .separator(),
             .init(title: String(localized: "Settings..."), action: #selector(openSettingsWindow), keyEquivalent: ","),
+            .init(title: String(localized: "Check for Updates…"), action: #selector(checkForUpdates), keyEquivalent: ""),
             .separator(),
             .init(title: String(localized: "Quit"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"),
             .separator(),
