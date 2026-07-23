@@ -35,6 +35,14 @@ This project is built on top of the work of:
 
 Licensed under [GPL-3.0](LICENSE), same as the original project.
 
+## What's New in 0.9.7
+
+### Animated Particle Textures
+
+- **TEXS particles animate** — Particle materials now reuse decoded TEXS multi-image/atlas frames and `.tex-json` sprite sheets instead of displaying only their first frame.
+- **Source animation modes** — Looping, `once`, and `randomframe` particle modes are scheduled with their authored frame durations and `sequencemultiplier` speed.
+- **SpriteKit-compatible fallback** — SpriteKit exposes a texture per emitter rather than a texture timeline per live particle, so frame selection is shared across an emitter; particle motion, lifetimes, and all previous emitter behavior remain unchanged.
+
 ## What's New in 0.9.6
 
 ### SteamCMD Cache and Library Reliability
@@ -162,11 +170,11 @@ The import panel now correctly handles both individual wallpaper folders and par
 
 ## Current Limitations
 
-- **Particle effects** — Common SpriteKit-compatible emitters are supported. Advanced particle operators, rope/trail renderers, control points, and animated sprite sheets are still approximate or unsupported.
+- **Particle effects** — Common SpriteKit-compatible emitters and shared TEXS/sprite-sheet texture animation are supported. Advanced particle operators, rope/trail renderers, control points, and per-particle frame selection remain approximate or unsupported.
 - **Audio-reactive scripts** — Wallpaper Engine's JavaScript-based audio visualization scripts are not executed. Properties with scripts fall back to their static `value`.
 - **Shader effects** — Custom GLSL shaders (bloom, blur, color correction) are not applied.
 - **Camera parallax** — Common orthographic mouse parallax is supported. Perspective-camera motion and camera shake are not yet implemented.
-- **Animated scenes** — TEXS multi-image and atlas animations plus `.tex-json` sprite sheets work on scene image layers. Particle-frame animation and timeline/script-driven object animation are not yet implemented.
+- **Animated scenes** — TEXS multi-image and atlas animations plus `.tex-json` sprite sheets work on scene image and particle layers. Per-particle frame selection and timeline/script-driven object animation are not yet implemented.
 - **Some JPEG thumbnails** — A small number of TEXB format 1 files contain non-standard JPEG data that macOS cannot decode. These are typically DXT-compressed textures misidentified as format 1.
 
 ## Supported Wallpaper Types

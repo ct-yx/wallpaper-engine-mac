@@ -288,10 +288,20 @@ class SceneWallpaperViewModel: ObservableObject {
         if let materialPath = ps.material {
             let material: WEMaterial? = loadJSON(path: materialPath, wallpaperDir: wallpaperDir)
             if let texName = material?.passes?.first?.textures?.first {
-                let texImage = loadTexture(named: texName, materialDir: materialPath, wallpaperDir: wallpaperDir)
-                    ?? generateProceduralTexture(named: texName)
-                if let img = texImage {
-                    emitter.particleTexture = SKTexture(image: img)
+                if let textureAsset = loadTextureAsset(
+                    named: texName,
+                    materialDir: materialPath,
+                    wallpaperDir: wallpaperDir
+                ) {
+                    emitter.particleTexture = SKTexture(image: textureAsset.image)
+                    applyParticleTextureAnimation(
+                        textureAsset.animationFrames,
+                        to: emitter,
+                        animationMode: ps.animationmode,
+                        speedMultiplier: ps.sequencemultiplier
+                    )
+                } else if let fallbackImage = generateProceduralTexture(named: texName) {
+                    emitter.particleTexture = SKTexture(image: fallbackImage)
                 }
             }
 
@@ -664,6 +674,51 @@ class SceneWallpaperViewModel: ObservableObject {
             actions.append(SKAction.wait(forDuration: max(frame.duration, 1.0 / 60.0)))
         }
         node.run(.repeatForever(.sequence(actions)), withKey: "wallpaper-engine-texs-animation")
+    }
+
+    /// SpriteKit's emitter API has one texture for the whole particle system,
+    /// rather than a per-particle texture sequence.  Updating it in the scene
+    /// timeline nevertheless makes the common looping and random-frame TEXS
+    /// particle materials animate, while the existing particle lifetime and
+    /// movement simulation remains handled by SKEmitterNode.
+    private func applyParticleTextureAnimation(
+        _ frames: [TEXAnimationFrame],
+        to emitter: SKEmitterNode,
+        animationMode: String?,
+        speedMultiplier: Double?
+    ) {
+        guard frames.count > 1 else { return }
+
+        let configuredSpeed = speedMultiplier ?? 1
+        let speed = configuredSpeed.isFinite && configuredSpeed > 0 ? configuredSpeed : 1
+        let frameActions: [SKAction] = frames.map { frame in
+            .sequence([
+                .run { [weak emitter] in
+                    emitter?.particleTexture = SKTexture(image: frame.image)
+                },
+                .wait(forDuration: max(frame.duration / speed, 1.0 / 60.0)),
+            ])
+        }
+
+        let sequence: SKAction
+        if animationMode == "once" {
+            sequence = .sequence(frameActions)
+        } else if animationMode == "randomframe" {
+            let averageDuration = max(
+                frames.map(\.duration).reduce(0, +) / Double(frames.count) / speed,
+                1.0 / 60.0
+            )
+            sequence = .repeatForever(.sequence([
+                .run { [weak emitter] in
+                    guard let frame = frames.randomElement() else { return }
+                    emitter?.particleTexture = SKTexture(image: frame.image)
+                },
+                .wait(forDuration: averageDuration),
+            ]))
+        } else {
+            sequence = .repeatForever(.sequence(frameActions))
+        }
+        emitter.run(sequence, withKey: "wallpaper-engine-particle-texture-animation")
     }
 
     // MARK: - Asset Loading
