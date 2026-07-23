@@ -43,7 +43,7 @@ struct AboutUsView: View {
                     creditRow("Haren Chen", handle: "haren724", role: String(localized: "Original creator"))
                     creditRow("MrWindDog", handle: "MrWindDog", role: String(localized: "Upstream maintainer"))
                     creditRow("Chen Chia Yang", handle: "Unayung", role: String(localized: "Scene rendering, Workshop, multi-display"))
-                    creditRow("1ris_W", handle: "Erica-Iris", role: String(localized: "Chinese i18n"))
+                    creditRow("ct-yx", handle: "ct-yx", role: String(localized: "Current maintainer, Simplified Chinese i18n"))
                     creditRow("Klaus Zhu", handle: "klauszhu1105", role: String(localized: "App logo icons"))
                 }
                 .font(.caption)

@@ -16,10 +16,11 @@ class SteamCmdService: ObservableObject {
     }
 
     private static let lastUsernameKey = "SteamLastUsername"
+    private var hasAttemptedCachedLogin = false
+    private let downloadQueue = DispatchQueue(label: "steamcmd.download.queue", qos: .userInitiated)
 
     init() {
         detectSteamCmd()
-        attemptCachedLogin()
     }
 
     /// Run a steamcmd process with proper pipe handling to avoid deadlocks.
@@ -35,6 +36,10 @@ class SteamCmdService: ObservableObject {
         let outputPipe = Pipe()
         let inputPipe = input == nil ? nil : Pipe()
         process.executableURL = URL(fileURLWithPath: cmdPath)
+        // SteamCMD keeps its account configuration and login token relative to
+        // its working directory.  Always use its install directory so login
+        // state survives app relaunches as well as download commands.
+        process.currentDirectoryURL = steamCmdWorkingDirectory(cmdPath: cmdPath)
         process.arguments = arguments
         if let inputPipe {
             process.standardInput = inputPipe
@@ -99,17 +104,23 @@ class SteamCmdService: ObservableObject {
 
     /// Automatically try cached session if we have a saved username and steamcmd is installed.
     private func attemptCachedLogin() {
-        guard isInstalled, !isLoggedIn else { return }
+        guard !hasAttemptedCachedLogin, isInstalled, !isLoggedIn else { return }
         if let saved = UserDefaults.standard.string(forKey: Self.lastUsernameKey), !saved.isEmpty {
+            hasAttemptedCachedLogin = true
             loginWithCachedSession(username: saved)
         }
+    }
+
+    private func setDetectedSteamCmdPath(_ path: String) {
+        steamCmdPath = path
+        attemptCachedLogin()
     }
 
     func detectSteamCmd() {
         // Check user-configured path first
         if let customPath = UserDefaults.standard.string(forKey: "SteamCmdPath"),
            FileManager.default.isExecutableFile(atPath: customPath) {
-            steamCmdPath = customPath
+            setDetectedSteamCmdPath(customPath)
             return
         }
 
@@ -134,8 +145,8 @@ class SteamCmdService: ObservableObject {
         ]
 
         for path in searchPaths {
-            if FileManager.default.fileExists(atPath: path) {
-                steamCmdPath = path
+            if FileManager.default.isExecutableFile(atPath: path) {
+                setDetectedSteamCmdPath(path)
                 return
             }
         }
@@ -156,7 +167,7 @@ class SteamCmdService: ObservableObject {
                 if let path = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
                    !path.isEmpty {
                     DispatchQueue.main.async {
-                        self?.steamCmdPath = path
+                        self?.setDetectedSteamCmdPath(path)
                     }
                 }
             }
@@ -180,7 +191,10 @@ class SteamCmdService: ObservableObject {
         }
         pathError = nil
         UserDefaults.standard.set(path, forKey: "SteamCmdPath")
+        hasAttemptedCachedLogin = false
+        isLoggedIn = false
         steamCmdPath = path
+        attemptCachedLogin()
     }
 
     /// Attempt login with username and password. Steam Guard code is optional.
@@ -251,10 +265,14 @@ class SteamCmdService: ObservableObject {
     func downloadWorkshopItem(workshopId: String) {
         guard let cmdPath = steamCmdPath, isLoggedIn else { return }
 
-        downloadProgress[workshopId] = .downloading(status: String(localized: "Starting steamcmd..."))
+        downloadProgress[workshopId] = .downloading(status: String(localized: "Queued"))
 
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+        downloadQueue.async { [weak self] in
             guard let self = self else { return }
+
+            DispatchQueue.main.async {
+                self.downloadProgress[workshopId] = .downloading(status: String(localized: "Starting steamcmd..."))
+            }
 
             let process = Process()
             let outputPipe = Pipe()
@@ -309,40 +327,45 @@ class SteamCmdService: ObservableObject {
             let sourcePath = steamAppsDir?
                 .appending(path: "workshop/content/431960/\(workshopId)")
 
-            DispatchQueue.main.async {
-                self.downloadProgress[workshopId] = .downloading(status: String(localized: "Copying to library..."))
+            if let sourceDir = sourcePath,
+               FileManager.default.fileExists(atPath: sourceDir.path) {
+                DispatchQueue.main.async {
+                    self.downloadProgress[workshopId] = .downloading(status: String(localized: "Copying to library..."))
+                }
 
-                if let sourceDir = sourcePath {
-                    let fm = FileManager.default
-                    if fm.fileExists(atPath: sourceDir.path) {
-                        let dest = fm.wallpapersDirectory.appending(path: workshopId)
-                        if !fm.fileExists(atPath: dest.path) {
-                            do {
-                                try fm.copyItem(at: sourceDir, to: dest)
-                            } catch {
-                                self.downloadProgress[workshopId] = .failed(
-                                    String(format: String(localized: "Copy failed: %@"), error.localizedDescription)
-                                )
-                                return
-                            }
+                let fm = FileManager.default
+                let dest = fm.wallpapersDirectory.appending(path: workshopId)
+                if !fm.fileExists(atPath: dest.path) {
+                    do {
+                        try fm.copyItem(at: sourceDir, to: dest)
+                    } catch {
+                        DispatchQueue.main.async {
+                            self.downloadProgress[workshopId] = .failed(
+                                String(format: String(localized: "Copy failed: %@"), error.localizedDescription)
+                            )
                         }
-                        self.downloadProgress[workshopId] = .completed
                         return
                     }
                 }
 
-                if fullOutput.contains("ERROR") || fullOutput.contains("FAILED") {
-                    let errorLine = fullOutput.components(separatedBy: "\n")
-                        .first(where: { $0.contains("ERROR") || $0.contains("FAILED") })
-                        ?? String(localized: "Unknown error")
-                    self.downloadProgress[workshopId] = .failed(errorLine)
-                } else if exitCode != 0 {
-                    self.downloadProgress[workshopId] = .failed(
-                        String(format: String(localized: "Exit code %d"), exitCode)
-                    )
-                } else {
-                    self.downloadProgress[workshopId] = .failed(String(localized: "Files not found at expected path"))
+                DispatchQueue.main.async {
+                    self.downloadProgress[workshopId] = .completed
                 }
+                return
+            }
+
+            let failure: String
+            if fullOutput.contains("ERROR") || fullOutput.contains("FAILED") {
+                failure = fullOutput.components(separatedBy: "\n")
+                    .first(where: { $0.contains("ERROR") || $0.contains("FAILED") })
+                    ?? String(localized: "Unknown error")
+            } else if exitCode != 0 {
+                failure = String(format: String(localized: "Exit code %d"), exitCode)
+            } else {
+                failure = String(localized: "Files not found at expected path")
+            }
+            DispatchQueue.main.async {
+                self.downloadProgress[workshopId] = .failed(failure)
             }
         }
     }
@@ -401,5 +424,9 @@ class SteamCmdService: ObservableObject {
             }
         }
         return nil
+    }
+
+    private func steamCmdWorkingDirectory(cmdPath: String) -> URL {
+        URL(fileURLWithPath: cmdPath).deletingLastPathComponent()
     }
 }

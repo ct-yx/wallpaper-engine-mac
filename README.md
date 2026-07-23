@@ -29,11 +29,24 @@ This project is built on top of the work of:
 
 - **[MrWindDog](https://github.com/MrWindDog)** — Maintainer of the upstream [wallpaper-engine-mac](https://github.com/MrWindDog/wallpaper-engine-mac) fork, added new features and UI refinements
 - **[Haren Chen](https://github.com/haren724)** — Original creator of [open-wallpaper-engine-mac](https://github.com/haren724/open-wallpaper-engine-mac), built the core app architecture (SwiftUI, video wallpaper playback, import system, playlist UI)
-- **[1ris_W](https://github.com/Erica-Iris)** — Chinese i18n translation
+- **[ct-yx](https://github.com/ct-yx)** — Current maintainer and Simplified Chinese localization
 - **[Klaus Zhu](https://github.com/klauszhu1105)** — App logo icons
 - **[Chen Chia Yang](https://github.com/Unayung)** — Scene wallpaper rendering, web wallpaper fixes, Steam Workshop integration, multi-display support, zip import
 
 Licensed under [GPL-3.0](LICENSE), same as the original project.
+
+## What's New in 0.9.0
+
+### Workshop Browsing and Details
+
+- **Collapsible filter sidebar** — Content rating, wallpaper type, and genre filters now live in a vertical left sidebar, so every filter remains reachable on small windows.
+- **Wallpaper detail view** — Click any Workshop card to inspect its preview, tags, description, size, and subscription count before downloading. The Steam Workshop link and download action are available in the detail view.
+- **Seamless browsing** — The browser loads 40 items per page and automatically preloads the next page as you reach the end of the grid. Pull to refresh remains available.
+- **Reliable SteamCMD sessions** — SteamCMD now always runs from its installation directory, preserving its cached session; downloads are serialized and library copies stay off the main thread.
+
+### New Installation Defaults
+
+New installations now pause on focus loss, stop for fullscreen apps and sleeping displays, mute when another app plays audio, keep running on battery, start with macOS, and use below-normal process priority.
 
 ## What's New in 0.8.2
 
@@ -142,7 +155,7 @@ In Xcode, change the signing certificate to your own or select "Sign to Run Loca
 1. Install steamcmd (`brew install steamcmd`) or point the app to an existing binary
 2. Switch to the **Workshop** tab and log in with your Steam account (must own Wallpaper Engine)
 3. Enter a [Steam Web API key](https://steamcommunity.com/dev/apikey) when prompted
-4. Search, filter, and click **Download** on any wallpaper
+4. Search, filter, open a wallpaper card, then click **Download** from its detail view
 
 ### Import from Local Files
 

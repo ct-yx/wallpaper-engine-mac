@@ -8,12 +8,17 @@ class WorkshopViewModel: ObservableObject {
     @Published var sortOrder: WorkshopSortOrder = .trending
     @Published var isLoading = false
     @Published var errorMessage: String?
-    @Published var currentPage = 1
     @Published var selectedTags: [String] = ["Everyone"]
+    @Published private(set) var currentPage = 1
+    @Published private(set) var hasMoreResults = true
+    @Published var selectedItem: WorkshopItem?
 
     let steamCmd: SteamCmdService
     private let api = WorkshopAPIService()
     private var cancellable: AnyCancellable?
+    private var searchGeneration = 0
+
+    private let pageSize = 40
 
     static let contentRatingTags = ["Everyone", "Questionable", "Mature"]
 
@@ -42,42 +47,73 @@ class WorkshopViewModel: ObservableObject {
 
     @MainActor
     func search() async {
+        searchGeneration += 1
+        let generation = searchGeneration
         isLoading = true
         errorMessage = nil
+        currentPage = 1
+        hasMoreResults = true
+        items = []
+
+        defer {
+            if generation == searchGeneration {
+                isLoading = false
+            }
+        }
 
         do {
             let results = try await api.searchItems(
                 query: searchText,
                 tags: selectedTags,
                 sortOrder: sortOrder,
-                page: currentPage
+                page: currentPage,
+                perPage: pageSize
             )
-            items = results
+            guard generation == searchGeneration else { return }
+            items = deduplicated(results)
+            hasMoreResults = results.count >= pageSize
         } catch {
+            guard generation == searchGeneration else { return }
             errorMessage = error.localizedDescription
         }
-
-        isLoading = false
     }
 
     @MainActor
     func loadMore() async {
-        currentPage += 1
+        guard !isLoading, hasMoreResults else { return }
+
+        let generation = searchGeneration
+        let nextPage = currentPage + 1
         isLoading = true
+
+        defer {
+            if generation == searchGeneration {
+                isLoading = false
+            }
+        }
 
         do {
             let results = try await api.searchItems(
                 query: searchText,
                 tags: selectedTags,
                 sortOrder: sortOrder,
-                page: currentPage
+                page: nextPage,
+                perPage: pageSize
             )
-            items.append(contentsOf: results)
+            guard generation == searchGeneration else { return }
+            currentPage = nextPage
+            items = deduplicated(items + results)
+            hasMoreResults = results.count >= pageSize
         } catch {
+            guard generation == searchGeneration else { return }
             errorMessage = error.localizedDescription
         }
+    }
 
-        isLoading = false
+    @MainActor
+    func loadMoreIfNeeded(appearing item: WorkshopItem) async {
+        guard item.id == items.last?.id else { return }
+        await loadMore()
     }
 
     func download(item: WorkshopItem) {
@@ -88,12 +124,55 @@ class WorkshopViewModel: ObservableObject {
         steamCmd.downloadProgress[item.id]
     }
 
-    func toggleTag(_ tag: String) {
-        if selectedTags.contains(tag) {
-            selectedTags.removeAll { $0 == tag }
-        } else {
-            selectedTags.append(tag)
+    func isInstalled(_ item: WorkshopItem) -> Bool {
+        let destination = FileManager.default.wallpapersDirectory.appending(path: item.id)
+        return FileManager.default.fileExists(atPath: destination.path)
+    }
+
+    func toggleTag(_ tag: String, in group: WorkshopTagGroup) {
+        switch group {
+        case .rating, .type:
+            let groupTags = group.tags
+            if selectedTags.contains(tag) {
+                selectedTags.removeAll { $0 == tag }
+            } else {
+                selectedTags.removeAll { groupTags.contains($0) }
+                selectedTags.append(tag)
+            }
+        case .genre:
+            if selectedTags.contains(tag) {
+                selectedTags.removeAll { $0 == tag }
+            } else {
+                selectedTags.append(tag)
+            }
         }
-        currentPage = 1
+    }
+
+    func resetFilters() {
+        selectedTags = ["Everyone"]
+    }
+
+    private func deduplicated(_ candidates: [WorkshopItem]) -> [WorkshopItem] {
+        var ids = Set<String>()
+        return candidates.filter { ids.insert($0.id).inserted }
+    }
+}
+
+enum WorkshopTagGroup: CaseIterable, Identifiable, Hashable {
+    case rating
+    case type
+    case genre
+
+    var id: Self { self }
+
+    var tags: [String] {
+        switch self {
+        case .rating:
+            return WorkshopViewModel.contentRatingTags
+        case .type:
+            return WorkshopViewModel.typeTags
+        case .genre:
+            return WorkshopViewModel.genreTags
+        }
     }
 }

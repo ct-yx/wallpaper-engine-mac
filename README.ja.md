@@ -29,11 +29,24 @@ Open Wallpaper Engine（パッチ版）
 
 - **[MrWindDog](https://github.com/MrWindDog)** — 上流 [wallpaper-engine-mac](https://github.com/MrWindDog/wallpaper-engine-mac) フォークのメンテナー、新機能と UI 改善を追加
 - **[Haren Chen](https://github.com/haren724)** — [open-wallpaper-engine-mac](https://github.com/haren724/open-wallpaper-engine-mac) のオリジナル作者、コアアーキテクチャを構築（SwiftUI、動画壁紙再生、インポートシステム、プレイリスト UI）
-- **[1ris_W](https://github.com/Erica-Iris)** — 中国語 i18n 翻訳
+- **[ct-yx](https://github.com/ct-yx)** — 現在のメンテナー、簡体字中国語ローカライズ
 - **[Klaus Zhu](https://github.com/klauszhu1105)** — アプリロゴアイコン
 - **[Chen Chia Yang](https://github.com/Unayung)** — シーン壁紙レンダリング、Web 壁紙修正、Steam Workshop 統合、マルチディスプレイ対応、Zip インポート
 
 [GPL-3.0](LICENSE) ライセンス（オリジナルプロジェクトと同一）。
+
+## 0.9.0 の新機能
+
+### Steam Workshop の閲覧と詳細
+
+- **折りたたみ可能なフィルターサイドバー** — コンテンツレーティング、壁紙タイプ、ジャンルを左側の縦型サイドバーへ移動し、小さいウィンドウでもすべての条件を操作できます。
+- **壁紙詳細ビュー** — Workshop のカードをクリックすると、ダウンロード前にプレビュー、タグ、説明、ファイルサイズ、購読数を確認できます。詳細ビューから Workshop を開くか、ダウンロードできます。
+- **シームレスなスクロール** — 1 ページにつき 40 件を読み込み、グリッド末尾に到達すると次ページを自動で先読みします。プル・トゥ・リフレッシュも利用できます。
+- **より信頼性の高い SteamCMD セッション** — SteamCMD は常にインストールディレクトリから起動し、キャッシュ済みセッションを保持します。ダウンロードは順番に実行され、ライブラリへのコピーはメインスレッドを占有しません。
+
+### 新規インストールの既定値
+
+新規インストールでは、フォーカス喪失時に一時停止、他のアプリがフルスクリーンまたはディスプレイ休止時に停止、他のアプリが音声を再生している時にミュートします。バッテリー時は継続実行、macOS 起動時に開始、プロセス優先度は通常より低く設定されます。
 
 ## 0.8.2 の新機能
 
@@ -142,7 +155,7 @@ Xcode で署名証明書を自分のものに変更するか「Sign to Run Local
 1. steamcmd をインストール（`brew install steamcmd`）するか、既存のバイナリを指定
 2. **Workshop** タブに切り替え、Steam アカウントでログイン（Wallpaper Engine の所有が必要）
 3. プロンプトが表示されたら [Steam Web API キー](https://steamcommunity.com/dev/apikey) を入力
-4. 検索、フィルターし、**Download** をクリックして壁紙をダウンロード
+4. 検索・フィルター後に壁紙カードを開き、詳細ビューから **Download** をクリック
 
 ### ローカルファイルからインポート
 

@@ -59,7 +59,7 @@ class WorkshopAPIService {
         tags: [String] = [],
         sortOrder: WorkshopSortOrder = .trending,
         page: Int = 1,
-        perPage: Int = 20
+        perPage: Int = 40
     ) async throws -> [WorkshopItem] {
         // Use ISteamRemoteStorage/GetPublishedFileDetails for specific IDs
         // Use the public search endpoint for browsing

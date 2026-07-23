@@ -29,11 +29,24 @@ Open Wallpaper Engine（修補版）
 
 - **[MrWindDog](https://github.com/MrWindDog)** — 上游 [wallpaper-engine-mac](https://github.com/MrWindDog/wallpaper-engine-mac) 分支的維護者，新增功能與 UI 優化
 - **[Haren Chen](https://github.com/haren724)** — [open-wallpaper-engine-mac](https://github.com/haren724/open-wallpaper-engine-mac) 原作者，建構核心架構（SwiftUI、影片桌布播放、匯入系統、播放清單 UI）
-- **[1ris_W](https://github.com/Erica-Iris)** — 中文 i18n 翻譯
+- **[ct-yx](https://github.com/ct-yx)** — 目前維護者與簡體中文在地化
 - **[Klaus Zhu](https://github.com/klauszhu1105)** — 應用程式圖示
 - **[Chen Chia Yang](https://github.com/Unayung)** — 場景桌布渲染、網頁桌布修復、Steam 創意工坊整合、多螢幕支援、Zip 匯入
 
 採用 [GPL-3.0](LICENSE) 授權，與原始專案相同。
+
+## 0.9.0 新功能
+
+### 創意工坊瀏覽與詳細資料
+
+- **可收合的篩選側欄** — 內容分級、桌布類型與風格標籤已移至左側直向側欄，小型視窗也可使用全部篩選條件。
+- **桌布詳細資料頁** — 點擊任一創意工坊卡片，即可在下載前檢視預覽、標籤、說明、檔案大小與訂閱數；詳細資料頁提供創意工坊連結與下載按鈕。
+- **無縫捲動瀏覽** — 每頁載入 40 項；捲動到網格末端會自動預先載入下一頁，並保留向下重新整理。
+- **更可靠的 SteamCMD 工作階段** — SteamCMD 一律從安裝目錄執行以保留快取工作階段；下載會依序執行，複製至桌布庫不再佔用主執行緒。
+
+### 新安裝預設值
+
+新安裝會在失去焦點時暫停、其他應用程式全螢幕或顯示器休眠時停止、其他應用程式播放音訊時靜音；使用電池時持續執行，隨 macOS 啟動，並使用低於正常的程序優先權。
 
 ## 0.8.2 新功能
 
@@ -142,7 +155,7 @@ open "Open Wallpaper Engine.xcodeproj"
 1. 安裝 steamcmd（`brew install steamcmd`）或指向現有的二進位檔
 2. 切換到 **Workshop** 分頁，使用 Steam 帳號登入（必須擁有 Wallpaper Engine）
 3. 出現提示時輸入 [Steam Web API 金鑰](https://steamcommunity.com/dev/apikey)
-4. 搜尋、篩選，然後點擊 **Download** 下載桌布
+4. 搜尋、篩選後開啟桌布卡片，並在詳細資料頁點擊 **Download**
 
 ### 從本地檔案匯入
 

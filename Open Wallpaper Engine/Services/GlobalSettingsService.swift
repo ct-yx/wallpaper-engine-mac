@@ -96,10 +96,10 @@ enum GSLogLevel: String, CaseIterable, Identifiable, Codable {
 struct GlobalSettings: Codable, Equatable {
     
     // MARK: Playback
-    var otherApplicationFocused = GSPlayback.keepRunning
-    var otherApplicationFullscreen = GSPlayback.keepRunning
-    var otherApplicationPlayingAudio = GSPlayback.keepRunning
-    var displayAsleep = GSPlayback.keepRunning
+    var otherApplicationFocused = GSPlayback.pause
+    var otherApplicationFullscreen = GSPlayback.stop
+    var otherApplicationPlayingAudio = GSPlayback.mute
+    var displayAsleep = GSPlayback.stop
     var laptopOnBattery = GSPlayback.keepRunning
     
     // MARK: Quality
@@ -110,7 +110,7 @@ struct GlobalSettings: Codable, Equatable {
     var fps: Double = 30
     
     // MARK: Automatic Setup
-    var autoStart = false
+    var autoStart = true
     var safeMode = false
     
     // MARK: Basic Setup
@@ -130,7 +130,7 @@ struct GlobalSettings: Codable, Equatable {
     var videoFramework = GSVideoFramework.avkit
     
     // MARK: Advanced
-    var processPiority = GSProcessPiority.normal // Not putting in use
+    var processPiority = GSProcessPiority.belowNormal // Not putting in use
     var pauseOnVRAMExhausted = false // Not putting in use
     var restartAfterCrashing = false // Not putting in use
     
