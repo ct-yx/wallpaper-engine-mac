@@ -35,6 +35,14 @@ This project is built on top of the work of:
 
 Licensed under [GPL-3.0](LICENSE), same as the original project.
 
+## What's New in 0.9.8
+
+### Scene Transform and Particle Lifecycle Fidelity
+
+- **Particle lifetime operators** — `sizechange`, `alphachange`, and `colorchange` now follow authored lifetime ranges, retain their values before/after the range, and multiply initialized size, alpha, or color like the Linux reference renderer.
+- **Nested scene transforms** — Image and particle objects now preserve parent groups, source-space origin, scale, angle, visibility, and alignment anchors instead of flattening every layer at the scene root.
+- **Flexible scene properties** — Customizable `{"value": ...}` scene fields are decoded for transforms, colors, size, alpha, and visibility. Material texture entries with explicit image extensions (for example `texture.png`) also load directly.
+
 ## What's New in 0.9.7
 
 ### Animated Particle Textures

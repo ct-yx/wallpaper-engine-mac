@@ -75,19 +75,21 @@ struct WESceneObject: Codable {
     // Common
     var id: Int?
     var name: String?
-    var origin: String?
-    var scale: String?
-    var angles: String?
-    var visible: Bool?
+    var parent: Int?
+    var origin: WEFlexValue?
+    var scale: WEFlexValue?
+    var angles: WEFlexValue?
+    var visible: WEFlexibleBool?
 
     // Image objects
     var image: String?       // path to model JSON
-    var alpha: Double?
-    var brightness: Double?
-    var color: String?
-    var colorBlendMode: Int?
-    var size: String?
+    var alpha: WEFlexValue?
+    var brightness: WEFlexValue?
+    var color: WEFlexValue?
+    var colorBlendMode: WEFlexValue?
+    var size: WEFlexValue?
     var alignment: String?
+    var horizontalalign: String?
     var solid: Bool?
     var copybackground: Bool?
     var parallaxDepth: WEFlexValue?
@@ -98,8 +100,8 @@ struct WESceneObject: Codable {
     var instanceoverride: WEInstanceOverride?
 
     enum CodingKeys: String, CodingKey {
-        case id, name, origin, scale, angles, visible
-        case image, alpha, brightness, color, colorBlendMode, size, alignment
+        case id, name, parent, origin, scale, angles, visible
+        case image, alpha, brightness, color, colorBlendMode, size, alignment, horizontalalign
         case solid, copybackground, parallaxDepth, perspective
         case particle, instanceoverride
     }
@@ -109,21 +111,26 @@ struct WESceneObject: Codable {
         // Fields that are always simple types
         id = try? c.decodeIfPresent(Int.self, forKey: .id)
         name = try? c.decodeIfPresent(String.self, forKey: .name)
+        parent = try? c.decodeIfPresent(Int.self, forKey: .parent)
         image = try? c.decodeIfPresent(String.self, forKey: .image)
         particle = try? c.decodeIfPresent(String.self, forKey: .particle)
         instanceoverride = try? c.decodeIfPresent(WEInstanceOverride.self, forKey: .instanceoverride)
 
-        // Fields that may be simple values or {"script":..,"value":..} objects
-        origin = try? c.decodeIfPresent(String.self, forKey: .origin)
-        scale = try? c.decodeIfPresent(String.self, forKey: .scale)
-        angles = try? c.decodeIfPresent(String.self, forKey: .angles)
-        visible = try? c.decodeIfPresent(Bool.self, forKey: .visible)
-        alpha = try? c.decodeIfPresent(Double.self, forKey: .alpha)
-        brightness = try? c.decodeIfPresent(Double.self, forKey: .brightness)
-        color = try? c.decodeIfPresent(String.self, forKey: .color)
-        colorBlendMode = try? c.decodeIfPresent(Int.self, forKey: .colorBlendMode)
-        size = try? c.decodeIfPresent(String.self, forKey: .size)
+        // These values may be a scalar, a vector string, or a user/script
+        // wrapper such as {"user": ..., "value": "1 1 1"}.  Decoding all
+        // of them through WEFlexValue keeps valid Workshop scenes from being
+        // dropped solely because their values are customizable.
+        origin = try? c.decodeIfPresent(WEFlexValue.self, forKey: .origin)
+        scale = try? c.decodeIfPresent(WEFlexValue.self, forKey: .scale)
+        angles = try? c.decodeIfPresent(WEFlexValue.self, forKey: .angles)
+        visible = try? c.decodeIfPresent(WEFlexibleBool.self, forKey: .visible)
+        alpha = try? c.decodeIfPresent(WEFlexValue.self, forKey: .alpha)
+        brightness = try? c.decodeIfPresent(WEFlexValue.self, forKey: .brightness)
+        color = try? c.decodeIfPresent(WEFlexValue.self, forKey: .color)
+        colorBlendMode = try? c.decodeIfPresent(WEFlexValue.self, forKey: .colorBlendMode)
+        size = try? c.decodeIfPresent(WEFlexValue.self, forKey: .size)
         alignment = try? c.decodeIfPresent(String.self, forKey: .alignment)
+        horizontalalign = try? c.decodeIfPresent(String.self, forKey: .horizontalalign)
         solid = try? c.decodeIfPresent(Bool.self, forKey: .solid)
         copybackground = try? c.decodeIfPresent(Bool.self, forKey: .copybackground)
         parallaxDepth = try? c.decodeIfPresent(WEFlexValue.self, forKey: .parallaxDepth)

@@ -125,27 +125,74 @@ class SceneWallpaperViewModel: ObservableObject {
             skScene.backgroundColor = NSColor(red: c.r, green: c.g, blue: c.b, alpha: 1.0)
         }
 
-        // Preserve source order: scene image layers and particle systems are
-        // composited in the same order that the upstream renderer creates them.
+        // Preserve the source hierarchy as well as source order.  Scene files
+        // commonly place images and particle systems beneath transform-only
+        // group objects; applying those transforms to a container lets
+        // SpriteKit compose origin, scale, and angle just like the reference
+        // renderer instead of treating every object as a root layer.
+        var objectIndicesByID = [Int: Int]()
+        for (index, object) in scene.objects.enumerated() {
+            if let id = object.id {
+                objectIndicesByID[id] = index
+            }
+        }
+
+        var containers = [Int: SKNode]()
+        var buildingContainers = Set<Int>()
+        func container(for index: Int) -> SKNode {
+            if let existing = containers[index] {
+                return existing
+            }
+
+            let object = scene.objects[index]
+            let node = SKNode()
+            node.name = object.id.map { "scene-object-\($0)" } ?? "scene-object-index-\(index)"
+            containers[index] = node
+            buildingContainers.insert(index)
+
+            let parentIndex = object.parent.flatMap { objectIndicesByID[$0] }
+            let hasParent = parentIndex != nil && parentIndex != index
+            configureSceneObjectContainer(
+                node,
+                object: object,
+                sceneSize: skScene.size,
+                isParented: hasParent
+            )
+            node.zPosition = CGFloat(index)
+
+            if let parentIndex, parentIndex != index, !buildingContainers.contains(parentIndex) {
+                container(for: parentIndex).addChild(node)
+            } else {
+                if let parentIndex, parentIndex != index, buildingContainers.contains(parentIndex) {
+                    Self.log("Ignoring cyclic parent relationship for scene object \(object.id ?? -1)")
+                }
+                skScene.addChild(node)
+            }
+
+            buildingContainers.remove(index)
+            return node
+        }
+
         var hasImage = false
+        var imageCount = 0
         var particleCount = 0
         for (index, obj) in scene.objects.enumerated() {
-            guard obj.visible != false else { continue }
+            let objectContainer = container(for: index)
+            guard obj.visible?.value != false else { continue }
             if obj.image != nil,
-               let node = buildImageNode(obj, wallpaperDir: wallpaperDir, sceneSize: skScene.size) {
-                node.zPosition = CGFloat(index)
-                skScene.addChild(node)
-                registerParallax(node: node, object: obj, isParticle: false)
+               let node = buildImageNode(obj, wallpaperDir: wallpaperDir) {
+                objectContainer.addChild(node)
+                registerParallax(node: objectContainer, object: obj, isParticle: false)
                 hasImage = true
+                imageCount += 1
             } else if obj.particle != nil,
-                      let node = buildParticleNode(obj, wallpaperDir: wallpaperDir, sceneSize: skScene.size) {
-                node.zPosition = CGFloat(index)
-                skScene.addChild(node)
-                registerParallax(node: node, object: obj, isParticle: true)
+                      let node = buildParticleNode(obj, wallpaperDir: wallpaperDir) {
+                objectContainer.addChild(node)
+                registerParallax(node: objectContainer, object: obj, isParticle: true)
                 particleCount += 1
             }
         }
-        Self.log("Scene render nodes: \(skScene.children.count) (\(particleCount) particle systems)")
+        Self.log("Scene render nodes: \(imageCount + particleCount) (\(imageCount) images, \(particleCount) particle systems)")
 
         // Fallback: use preview image
         if !hasImage {
@@ -173,8 +220,7 @@ class SceneWallpaperViewModel: ObservableObject {
 
     private func buildImageNode(
         _ obj: WESceneObject,
-        wallpaperDir: URL,
-        sceneSize: CGSize
+        wallpaperDir: URL
     ) -> SKSpriteNode? {
         guard let imagePath = obj.image else { return nil }
 
@@ -208,8 +254,8 @@ class SceneWallpaperViewModel: ObservableObject {
         let node = SKSpriteNode(texture: texture)
 
         // Size from object, or use pixel dimensions (not point size, which is halved on Retina)
-        if let sizeStr = obj.size {
-            let (w, h) = sizeStr.parseVector2()
+        if let sizeValue = obj.size {
+            let (w, h, _) = sizeValue.vectorValue
             node.size = CGSize(width: w, height: h)
         } else {
             let pixelW = image.representations.first?.pixelsWide ?? Int(image.size.width)
@@ -217,21 +263,19 @@ class SceneWallpaperViewModel: ObservableObject {
             node.size = CGSize(width: pixelW, height: pixelH)
         }
 
-        // Position: Wallpaper Engine uses a top-left origin with Y-down while
-        // SpriteKit uses a bottom-left origin with Y-up.
-        if let originStr = obj.origin {
-            let (x, y, _) = originStr.parseVector3()
-            node.position = CGPoint(x: x, y: sceneSize.height - y)
-        }
+        // Image transforms are applied around the alignment anchor.  The
+        // upstream renderer treats origin as the anchor point rather than
+        // always as the visual centre (e.g. `top-left` pins that corner).
+        let alignment = (obj.horizontalalign ?? obj.alignment ?? "center").lowercased()
+        node.anchorPoint = imageAnchorPoint(for: alignment)
 
         // Alpha
-        node.alpha = CGFloat(obj.alpha ?? 1.0)
+        node.alpha = safeParticleScalar(obj.alpha?.doubleValue ?? 1, fallback: 1, minimum: 0, maximum: 1)
 
         // Color tint
-        if let colorStr = obj.color {
-            let c = colorStr.parseColor()
-            node.color = NSColor(red: c.r, green: c.g, blue: c.b, alpha: 1.0)
-            node.colorBlendFactor = (obj.colorBlendMode ?? 0) > 0 ? 1.0 : 0.0
+        if let color = obj.color?.vectorValue {
+            node.color = particleColor(from: color)
+            node.colorBlendFactor = (obj.colorBlendMode?.doubleValue ?? 0) > 0 ? 1.0 : 0.0
         }
 
         // Blend mode from material
@@ -248,9 +292,51 @@ class SceneWallpaperViewModel: ObservableObject {
         return node
     }
 
+    private func imageAnchorPoint(for alignment: String) -> CGPoint {
+        var anchor = CGPoint(x: 0.5, y: 0.5)
+
+        if alignment.contains("left") {
+            anchor.x = 0
+        } else if alignment.contains("right") {
+            anchor.x = 1
+        }
+
+        // Source scene coordinates are Y-down.  In SpriteKit, a source `top`
+        // anchor is the node's bottom edge after that coordinate conversion.
+        if alignment.contains("top") {
+            anchor.y = 0
+        } else if alignment.contains("bottom") {
+            anchor.y = 1
+        }
+
+        return anchor
+    }
+
+    private func configureSceneObjectContainer(
+        _ node: SKNode,
+        object: WESceneObject,
+        sceneSize: CGSize,
+        isParented: Bool
+    ) {
+        let origin = object.origin?.vectorValue ?? (0, 0, 0)
+        node.position = isParented
+            ? CGPoint(x: origin.0, y: -origin.1)
+            : CGPoint(x: origin.0, y: sceneSize.height - origin.1)
+
+        let scale = object.scale?.vectorValue ?? (1, 1, 1)
+        node.xScale = safeParticleScalar(scale.0, fallback: 1)
+        node.yScale = safeParticleScalar(scale.1, fallback: 1)
+
+        let angle = object.angles?.vectorValue.2 ?? 0
+        // Converted local coordinates have a flipped Y axis, so the source
+        // angle is inverted before SpriteKit composes parent/child transforms.
+        node.zRotation = -safeParticleScalar(angle, fallback: 0)
+        node.isHidden = object.visible?.value == false
+    }
+
     // MARK: - Particle Objects
 
-    private func buildParticleNode(_ obj: WESceneObject, wallpaperDir: URL, sceneSize: CGSize) -> SKNode? {
+    private func buildParticleNode(_ obj: WESceneObject, wallpaperDir: URL) -> SKNode? {
         guard let particlePath = obj.particle else { return nil }
 
         let particleSystem: WEParticleSystem? = loadJSON(path: particlePath, wallpaperDir: wallpaperDir)
@@ -266,7 +352,7 @@ class SceneWallpaperViewModel: ObservableObject {
         let overrides = obj.instanceoverride
         let sizeMultiplier = safeParticleScalar(overrides?.size?.value ?? 1, fallback: 1, minimum: 0)
         let baseAlpha = safeParticleScalar(
-            overrides?.alpha?.value ?? obj.alpha ?? 1,
+            overrides?.alpha?.value ?? obj.alpha?.doubleValue ?? 1,
             fallback: 1,
             minimum: 0,
             maximum: 1
@@ -471,6 +557,43 @@ class SceneWallpaperViewModel: ObservableObject {
                     fadeOut: op.fadeouttime?.doubleValue ?? 0
                 )
 
+            case "sizechange":
+                // Wallpaper Engine changes the particle's scale relative to
+                // its initialized size.  SpriteKit expresses the same idea as
+                // a lifetime scale sequence, so the randomized initial size
+                // remains intact.
+                applyScaleChange(
+                    to: emitter,
+                    startTime: op.starttime?.doubleValue ?? 0,
+                    endTime: op.endtime?.doubleValue ?? 1,
+                    startValue: op.startvalue?.doubleValue ?? 1,
+                    endValue: op.endvalue?.doubleValue ?? 0
+                )
+
+            case "alphachange":
+                // The upstream operator multiplies initial alpha.  Capture
+                // the current SpriteKit base alpha so this also respects the
+                // alpha initializer and scene instance override.
+                applyAlphaChange(
+                    to: emitter,
+                    startTime: op.starttime?.doubleValue ?? 0,
+                    endTime: op.endtime?.doubleValue ?? 1,
+                    startValue: op.startvalue?.doubleValue ?? 1,
+                    endValue: op.endvalue?.doubleValue ?? 0
+                )
+
+            case "colorchange":
+                // Like the Linux renderer, use the operator's colours as
+                // multipliers of the initialized particle colour instead of
+                // replacing it outright.
+                applyColorChange(
+                    to: emitter,
+                    startTime: op.starttime?.doubleValue ?? 0,
+                    endTime: op.endtime?.doubleValue ?? 1,
+                    startValue: op.startvalue?.vectorValue ?? (1, 1, 1),
+                    endValue: op.endvalue?.vectorValue ?? (1, 1, 1)
+                )
+
             default:
                 break
             }
@@ -482,19 +605,6 @@ class SceneWallpaperViewModel: ObservableObject {
             emitter.particleSize = CGSize(width: max(emitter.particleSize.width, 1), height: trailLength)
             // Align particles to movement direction
             emitter.particleRotation = emitter.emissionAngle
-        }
-
-        // Position from object origin
-        if let originStr = obj.origin {
-            let (x, y, _) = originStr.parseVector3()
-            emitter.position = CGPoint(x: x, y: sceneSize.height - y)
-        }
-
-        // Scale from object
-        if let scaleStr = obj.scale {
-            let (sx, sy, _) = scaleStr.parseVector3()
-            emitter.xScale = CGFloat(sx)
-            emitter.yScale = CGFloat(sy)
         }
 
         // SKEmitterNode does not expose a live-particle pool size.  Restrict
@@ -560,6 +670,128 @@ class SceneWallpaperViewModel: ObservableObject {
                 NSNumber(value: fadeOutStart),
                 NSNumber(value: 1),
             ]
+        )
+    }
+
+    /// Build an SKKeyframeSequence timeline equivalent to the upstream
+    /// `fadeValue(life, startTime, endTime, startValue, endValue)` helper.
+    /// The source times are lifetime fractions, not seconds.  It holds the
+    /// start value before `startTime`, interpolates to `endValue`, then holds
+    /// that final value for the remainder of the particle's lifetime.
+    private func particleLifecycleKeyframeTimes(startTime: Double, endTime: Double) -> [NSNumber] {
+        let start = min(max(startTime.isFinite ? startTime : 0, 0), 1)
+        let end = min(max(endTime.isFinite ? endTime : 1, 0), 1)
+
+        // Wallpaper Engine treats an inverted or zero-width interval as a
+        // step: it preserves the start value through `startTime`, then uses
+        // the end value.  Keep a very small non-zero segment because SpriteKit
+        // keyframes are interpolated and cannot express an exact discontinuity.
+        if end <= start {
+            guard start < 1 else {
+                return [NSNumber(value: 0), NSNumber(value: 1)]
+            }
+            let stepEnd = min(start + 0.0001, 1)
+            return [
+                NSNumber(value: 0),
+                NSNumber(value: start),
+                NSNumber(value: stepEnd),
+                NSNumber(value: 1),
+            ]
+        }
+
+        return [
+            NSNumber(value: 0),
+            NSNumber(value: start),
+            NSNumber(value: end),
+            NSNumber(value: 1),
+        ]
+    }
+
+    private func applyScaleChange(
+        to emitter: SKEmitterNode,
+        startTime: Double,
+        endTime: Double,
+        startValue: Double,
+        endValue: Double
+    ) {
+        let startScale = safeParticleScalar(startValue, fallback: 1, minimum: 0)
+        let endScale = safeParticleScalar(endValue, fallback: 0, minimum: 0)
+        let times = particleLifecycleKeyframeTimes(startTime: startTime, endTime: endTime)
+        let values: [NSNumber]
+
+        if times.count == 2 {
+            values = [NSNumber(value: Double(startScale)), NSNumber(value: Double(startScale))]
+        } else {
+            values = [
+                NSNumber(value: Double(startScale)),
+                NSNumber(value: Double(startScale)),
+                NSNumber(value: Double(endScale)),
+                NSNumber(value: Double(endScale)),
+            ]
+        }
+
+        emitter.particleScaleSequence = SKKeyframeSequence(keyframeValues: values, times: times)
+    }
+
+    private func applyAlphaChange(
+        to emitter: SKEmitterNode,
+        startTime: Double,
+        endTime: Double,
+        startValue: Double,
+        endValue: Double
+    ) {
+        let baseAlpha = Double(emitter.particleAlpha)
+        let startAlpha = safeParticleScalar(baseAlpha * startValue, fallback: baseAlpha, minimum: 0, maximum: 1)
+        let endAlpha = safeParticleScalar(baseAlpha * endValue, fallback: baseAlpha, minimum: 0, maximum: 1)
+        let times = particleLifecycleKeyframeTimes(startTime: startTime, endTime: endTime)
+        let values: [NSNumber]
+
+        if times.count == 2 {
+            values = [NSNumber(value: Double(startAlpha)), NSNumber(value: Double(startAlpha))]
+        } else {
+            values = [
+                NSNumber(value: Double(startAlpha)),
+                NSNumber(value: Double(startAlpha)),
+                NSNumber(value: Double(endAlpha)),
+                NSNumber(value: Double(endAlpha)),
+            ]
+        }
+
+        emitter.particleAlphaSequence = SKKeyframeSequence(keyframeValues: values, times: times)
+    }
+
+    private func applyColorChange(
+        to emitter: SKEmitterNode,
+        startTime: Double,
+        endTime: Double,
+        startValue: (Double, Double, Double),
+        endValue: (Double, Double, Double)
+    ) {
+        let baseColor = emitter.particleColor
+        let startColor = particleColor(baseColor, multipliedBy: startValue)
+        let endColor = particleColor(baseColor, multipliedBy: endValue)
+        let times = particleLifecycleKeyframeTimes(startTime: startTime, endTime: endTime)
+        let values: [NSColor]
+
+        if times.count == 2 {
+            values = [startColor, startColor]
+        } else {
+            values = [startColor, startColor, endColor, endColor]
+        }
+
+        emitter.particleColorSequence = SKKeyframeSequence(keyframeValues: values, times: times)
+    }
+
+    private func particleColor(
+        _ color: NSColor,
+        multipliedBy multiplier: (Double, Double, Double)
+    ) -> NSColor {
+        let source = color.usingColorSpace(.sRGB) ?? color
+        return NSColor(
+            red: safeParticleScalar(Double(source.redComponent) * multiplier.0, fallback: 1, minimum: 0, maximum: 1),
+            green: safeParticleScalar(Double(source.greenComponent) * multiplier.1, fallback: 1, minimum: 0, maximum: 1),
+            blue: safeParticleScalar(Double(source.blueComponent) * multiplier.2, fallback: 1, minimum: 0, maximum: 1),
+            alpha: source.alphaComponent
         )
     }
 
@@ -743,19 +975,25 @@ class SceneWallpaperViewModel: ObservableObject {
         materialDir: String,
         wallpaperDir: URL
     ) -> SceneTextureAsset? {
-        // Build candidate .tex paths: relative to material dir, then relative to materials/ root
+        // Build candidate .tex paths: relative to material dir, then relative to materials/ root.
+        // Most material JSON uses extensionless texture names, but exported
+        // scenes can explicitly reference `foo.tex` or `foo.png`; preserve
+        // that extension instead of producing paths such as `foo.png.png`.
         let materialDirPath = (materialDir as NSString).deletingLastPathComponent
+        let explicitExtension = (name as NSString).pathExtension.lowercased()
+        let textureFileName = explicitExtension == "tex" ? name : "\(name).tex"
         var texPaths = [String]()
+        func appendTexPath(_ path: String) {
+            guard !texPaths.contains(path) else { return }
+            texPaths.append(path)
+        }
         if !materialDirPath.isEmpty {
-            texPaths.append("\(materialDirPath)/\(name).tex")
+            appendTexPath("\(materialDirPath)/\(textureFileName)")
         }
         // Also try materials/{name}.tex for textures with embedded paths (e.g. "workshop/xxx/foo")
         let materialsRoot = materialDirPath.split(separator: "/").first.map(String.init) ?? "materials"
-        let rootPath = "\(materialsRoot)/\(name).tex"
-        if !texPaths.contains(rootPath) {
-            texPaths.append(rootPath)
-        }
-        texPaths.append("\(name).tex")
+        appendTexPath("\(materialsRoot)/\(textureFileName)")
+        appendTexPath(textureFileName)
 
         for texPath in texPaths {
             // Try .tex from PKG
@@ -794,9 +1032,27 @@ class SceneWallpaperViewModel: ObservableObject {
             }
         }
 
-        // Try common image formats directly
-        for ext in ["png", "jpg", "jpeg", "gif"] {
-            let imgPath = materialDirPath.isEmpty ? "\(name).\(ext)" : "\(materialDirPath)/\(name).\(ext)"
+        // Try common image formats directly.  If the material supplies an
+        // image extension, try that exact path before extensionless fallbacks.
+        let imageExtensions = ["png", "jpg", "jpeg", "gif"]
+        var imagePaths = [String]()
+        func appendImagePath(_ path: String) {
+            guard !imagePaths.contains(path) else { return }
+            imagePaths.append(path)
+        }
+        if imageExtensions.contains(explicitExtension) {
+            if !materialDirPath.isEmpty {
+                appendImagePath("\(materialDirPath)/\(name)")
+            }
+            appendImagePath(name)
+        }
+        for ext in imageExtensions {
+            let imageName = explicitExtension.isEmpty ? "\(name).\(ext)" : name
+            let imgPath = materialDirPath.isEmpty ? imageName : "\(materialDirPath)/\(imageName)"
+            appendImagePath(imgPath)
+        }
+
+        for imgPath in imagePaths {
             if let parser = pkgParser, let imgData = parser.extractFile(named: imgPath) {
                 if let image = NSImage(data: imgData) {
                     return SceneTextureAsset(image: image, animationFrames: [])
