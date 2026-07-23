@@ -686,6 +686,13 @@ private struct SteamDownloadSetupView: View {
                     .frame(width: 480)
             }
         }
+        .onAppear {
+            // Keep Workshop browsing independent from SteamCMD.  Once the
+            // user explicitly opens download setup, reuse a saved SteamCMD
+            // session automatically so a relaunch does not require entering
+            // credentials again.
+            steamCmd.restoreCachedSessionForDownloadIfNeeded()
+        }
     }
 }
 

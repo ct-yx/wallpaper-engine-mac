@@ -35,6 +35,15 @@ This project is built on top of the work of:
 
 Licensed under [GPL-3.0](LICENSE), same as the original project.
 
+## What's New in 0.9.3
+
+### Scene Particles and More Resilient Downloads
+
+- **Common scene particles render** — SpriteKit now renders common box/sphere emitter scenes such as rain, snow, and sparkles. It maps particle textures, blend modes, spawn ranges, lifetimes, sizes, velocity, gravity, alpha fades, rotation, and the standard instance overrides while limiting malformed particle pools.
+- **Correct scene coordinates** — Static image layers and particle systems now convert Wallpaper Engine's top-left coordinate space to SpriteKit's bottom-left coordinate space.
+- **On-demand cached session restore** — Opening the download setup sheet automatically checks the saved SteamCMD session, but browsing Workshop search results and details still never launches SteamCMD.
+- **Reliable library synchronization** — Downloads look for the exact Workshop item across supported SteamCMD data locations, time out instead of hanging forever, then replace the local library copy through a staging directory.
+
 ## What's New in 0.9.2
 
 ### Workshop Access and Scene Textures
@@ -128,7 +137,7 @@ The import panel now correctly handles both individual wallpaper folders and par
 
 ## Current Limitations
 
-- **Particle effects** — Scene particle systems (rain, snow, sparkles) are parsed but disabled in rendering to avoid visual artifacts. The particle mapping code exists but needs refinement.
+- **Particle effects** — Common SpriteKit-compatible emitters are supported. Advanced particle operators, rope/trail renderers, control points, and animated sprite sheets are still approximate or unsupported.
 - **Audio-reactive scripts** — Wallpaper Engine's JavaScript-based audio visualization scripts are not executed. Properties with scripts fall back to their static `value`.
 - **Shader effects** — Custom GLSL shaders (bloom, blur, color correction) are not applied.
 - **Camera parallax** — Mouse-tracking camera movement is not implemented.
@@ -142,7 +151,7 @@ The import panel now correctly handles both individual wallpaper folders and par
 | Video (.mp4, .webm) | Working (original) |
 | Web (HTML/WebGL) | Working (patched) |
 | Scene (static images) | Working (new) |
-| Scene (particles) | Partial (disabled) |
+| Scene (particles) | Partial (common emitters) |
 | Scene (DXT1/DXT3/DXT5 textures) | Software-decoded |
 | Application | Not supported |
 

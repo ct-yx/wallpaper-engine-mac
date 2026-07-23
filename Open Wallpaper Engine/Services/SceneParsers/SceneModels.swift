@@ -123,7 +123,11 @@ struct WEInstanceOverride: Codable {
     var id: Int?
     var colorn: String?
     var rate: WEScriptValue?
-    var size: Double?
+    var size: WEScriptValue?
+    var alpha: WEScriptValue?
+    var lifetime: WEScriptValue?
+    var speed: WEScriptValue?
+    var count: WEScriptValue?
 }
 
 struct WEScriptValue: Codable {
@@ -131,15 +135,24 @@ struct WEScriptValue: Codable {
     var value: Double?
 
     init(from decoder: Decoder) throws {
-        // Can be just a number or an object with script+value
-        if let container = try? decoder.singleValueContainer(),
-           let num = try? container.decode(Double.self) {
+        // Can be a number, a numeric string, or an object with script+value.
+        let singleValueContainer = try decoder.singleValueContainer()
+        if let num = try? singleValueContainer.decode(Double.self) {
             self.value = num
+            self.script = nil
+        } else if let stringValue = try? singleValueContainer.decode(String.self) {
+            self.value = Double(stringValue)
             self.script = nil
         } else {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             self.script = try container.decodeIfPresent(String.self, forKey: .script)
-            self.value = try container.decodeIfPresent(Double.self, forKey: .value)
+            if let numberValue = try? container.decode(Double.self, forKey: .value) {
+                self.value = numberValue
+            } else if let stringValue = try? container.decode(String.self, forKey: .value) {
+                self.value = Double(stringValue)
+            } else {
+                self.value = nil
+            }
         }
     }
 
@@ -176,7 +189,7 @@ struct WEParticleSystem: Codable {
     var `operator`: [WEParticleOperator]?
     var renderer: [WEParticleRenderer]?
     var material: String?
-    var maxcount: Int?
+    var maxcount: WEFlexValue?
     var flags: Int?
     var starttime: Double?
     var animationmode: String?
@@ -186,13 +199,15 @@ struct WEParticleSystem: Codable {
 struct WEParticleEmitter: Codable {
     var id: Int?
     var name: String?
-    var rate: Double?
+    var rate: WEFlexValue?
     var origin: String?
     var directions: String?
-    var distancemax: Double?
-    var distancemin: Double?
-    var speedmax: Double?
-    var speedmin: Double?
+    var distancemax: WEFlexValue?
+    var distancemin: WEFlexValue?
+    var speedmax: WEFlexValue?
+    var speedmin: WEFlexValue?
+    var instantaneous: Int?
+    var flags: Int?
 }
 
 struct WEParticleInitializer: Codable {
@@ -200,12 +215,15 @@ struct WEParticleInitializer: Codable {
     var name: String?
     var min: WEFlexValue?
     var max: WEFlexValue?
+    var exponent: WEFlexValue?
 }
 
-/// A value that can be either a number or a string (e.g. "0 -3000 0")
+/// A value in Wallpaper Engine scene JSON can be a scalar, vector, or a
+/// script wrapper such as `{ "value": "0 -3000 0" }`.
 enum WEFlexValue: Codable {
     case number(Double)
     case string(String)
+    case vector([Double])
 
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -213,8 +231,16 @@ enum WEFlexValue: Codable {
             self = .number(num)
         } else if let str = try? container.decode(String.self) {
             self = .string(str)
+        } else if let values = try? container.decode([Double].self) {
+            self = .vector(values)
         } else {
-            self = .number(0)
+            let keyedContainer = try? decoder.container(keyedBy: ValueCodingKeys.self)
+            if let keyedContainer,
+               let value = try? keyedContainer.decode(WEFlexValue.self, forKey: .value) {
+                self = value
+            } else {
+                self = .number(0)
+            }
         }
     }
 
@@ -223,13 +249,19 @@ enum WEFlexValue: Codable {
         switch self {
         case .number(let n): try container.encode(n)
         case .string(let s): try container.encode(s)
+        case .vector(let values): try container.encode(values)
         }
+    }
+
+    private enum ValueCodingKeys: String, CodingKey {
+        case value
     }
 
     var doubleValue: Double {
         switch self {
         case .number(let n): return n
         case .string(let s): return Double(s) ?? 0
+        case .vector(let values): return values.first ?? 0
         }
     }
 
@@ -237,6 +269,12 @@ enum WEFlexValue: Codable {
         switch self {
         case .number(let n): return (n, n, n)
         case .string(let s): return s.parseVector3()
+        case .vector(let values):
+            return (
+                values.count > 0 ? values[0] : 0,
+                values.count > 1 ? values[1] : 0,
+                values.count > 2 ? values[2] : 0
+            )
         }
     }
 }
@@ -244,10 +282,14 @@ enum WEFlexValue: Codable {
 struct WEParticleOperator: Codable {
     var id: Int?
     var name: String?
-    var gravity: String?
-    var drag: Double?
-    var fadeintime: Double?
-    var fadeouttime: Double?
+    var gravity: WEFlexValue?
+    var drag: WEFlexValue?
+    var fadeintime: WEFlexValue?
+    var fadeouttime: WEFlexValue?
+    var starttime: WEFlexValue?
+    var endtime: WEFlexValue?
+    var startvalue: WEFlexValue?
+    var endvalue: WEFlexValue?
 }
 
 struct WEParticleRenderer: Codable {
