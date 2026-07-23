@@ -472,7 +472,7 @@ private struct WorkshopItemCard: View {
                             .foregroundStyle(.green)
                     } else {
                         Label("View Details", systemImage: "chevron.right")
-                            .foregroundStyle(.accent)
+                            .foregroundStyle(Color.accentColor)
                     }
                     Spacer()
                 }
