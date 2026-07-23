@@ -35,6 +35,14 @@ This project is built on top of the work of:
 
 Licensed under [GPL-3.0](LICENSE), same as the original project.
 
+## What's New in 0.9.4
+
+### Mouse Camera Parallax for Scene Wallpapers
+
+- **Wallpaper-defined parallax** — Scene wallpapers that enable `cameraparallax` now follow the pointer. The renderer reads the source amount, delay, mouse-influence, and per-object `parallaxDepth` settings, including `{"user":…, "value":…}` wrappers used by Workshop scenes.
+- **Layer-aware motion** — Image layers and particle emitters move from their original positions according to their independent depth values; particle layers retain the upstream minimum depth behavior for visible motion.
+- **No global input hook** — Parallax updates within SpriteKit's frame loop and uses the active wallpaper view's window coordinates, so it does not add a global event monitor.
+
 ## What's New in 0.9.3
 
 ### Scene Particles and More Resilient Downloads
@@ -140,7 +148,7 @@ The import panel now correctly handles both individual wallpaper folders and par
 - **Particle effects** — Common SpriteKit-compatible emitters are supported. Advanced particle operators, rope/trail renderers, control points, and animated sprite sheets are still approximate or unsupported.
 - **Audio-reactive scripts** — Wallpaper Engine's JavaScript-based audio visualization scripts are not executed. Properties with scripts fall back to their static `value`.
 - **Shader effects** — Custom GLSL shaders (bloom, blur, color correction) are not applied.
-- **Camera parallax** — Mouse-tracking camera movement is not implemented.
+- **Camera parallax** — Common orthographic mouse parallax is supported. Perspective-camera motion and camera shake are not yet implemented.
 - **Animated scenes** — Sprite animations and timeline-based object animations are not supported.
 - **Some JPEG thumbnails** — A small number of TEXB format 1 files contain non-standard JPEG data that macOS cannot decode. These are typically DXT-compressed textures misidentified as format 1.
 

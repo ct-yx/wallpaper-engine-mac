@@ -24,6 +24,23 @@ class SceneWallpaperViewModel: ObservableObject {
     @Published var skScene: SKScene?
 
     private var pkgParser: PKGParser?
+    private var parallaxNodes: [ParallaxNode] = []
+    private var parallaxConfiguration: ParallaxConfiguration?
+    private var parallaxDisplacement = CGPoint.zero
+    private var lastParallaxUpdateTime: TimeInterval?
+
+    private struct ParallaxNode {
+        let node: SKNode
+        let basePosition: CGPoint
+        let depth: CGPoint
+    }
+
+    private struct ParallaxConfiguration {
+        let amount: CGFloat
+        let delay: CGFloat
+        let mouseInfluence: CGFloat
+        let referenceSize: CGFloat
+    }
 
     init(wallpaper: WEWallpaper) {
         self.currentWallpaper = wallpaper
@@ -92,8 +109,10 @@ class SceneWallpaperViewModel: ObservableObject {
 
     private func buildSKScene(from scene: WEScene, wallpaperDir: URL) -> SKScene {
         let projection = scene.general.orthogonalprojection ?? WEOrthogonalProjection(width: 1920, height: 1080)
-        let skScene = SKScene(size: CGSize(width: projection.width, height: projection.height))
+        let skScene = WEParallaxSKScene(size: CGSize(width: projection.width, height: projection.height))
+        skScene.parallaxOwner = self
         skScene.scaleMode = .aspectFill
+        configureParallax(from: scene.general, sceneSize: skScene.size)
 
         // Background color from clearcolor
         if let colorStr = scene.general.clearcolor {
@@ -111,11 +130,13 @@ class SceneWallpaperViewModel: ObservableObject {
                let node = buildImageNode(obj, wallpaperDir: wallpaperDir, sceneSize: skScene.size) {
                 node.zPosition = CGFloat(index)
                 skScene.addChild(node)
+                registerParallax(node: node, object: obj, isParticle: false)
                 hasImage = true
             } else if obj.particle != nil,
                       let node = buildParticleNode(obj, wallpaperDir: wallpaperDir, sceneSize: skScene.size) {
                 node.zPosition = CGFloat(index)
                 skScene.addChild(node)
+                registerParallax(node: node, object: obj, isParticle: true)
                 particleCount += 1
             }
         }
@@ -521,6 +542,107 @@ class SceneWallpaperViewModel: ObservableObject {
         )
     }
 
+    // MARK: - Camera Parallax
+
+    private func configureParallax(from general: WESceneGeneral, sceneSize: CGSize) {
+        parallaxNodes = []
+        parallaxDisplacement = .zero
+        lastParallaxUpdateTime = nil
+
+        guard general.cameraparallax?.value == true else {
+            parallaxConfiguration = nil
+            return
+        }
+
+        parallaxConfiguration = ParallaxConfiguration(
+            amount: safeParticleScalar(
+                general.cameraparallaxamount?.doubleValue ?? 1,
+                fallback: 1,
+                minimum: -5,
+                maximum: 5
+            ),
+            delay: safeParticleScalar(
+                general.cameraparallaxdelay?.doubleValue ?? 0,
+                fallback: 0,
+                minimum: 0,
+                maximum: 60
+            ),
+            mouseInfluence: safeParticleScalar(
+                general.cameraparallaxmouseinfluence?.doubleValue ?? 1,
+                fallback: 1,
+                minimum: 0,
+                maximum: 5
+            ),
+            referenceSize: max(sceneSize.width, 1)
+        )
+    }
+
+    private func registerParallax(node: SKNode, object: WESceneObject, isParticle: Bool) {
+        guard parallaxConfiguration != nil else { return }
+
+        let sourceDepth = object.parallaxDepth?.vectorValue ?? (0, 0, 0)
+        var depth = CGPoint(
+            x: safeParticleScalar(sourceDepth.0, fallback: 0, minimum: -10, maximum: 10),
+            y: safeParticleScalar(sourceDepth.1, fallback: 0, minimum: -10, maximum: 10)
+        )
+
+        // The upstream renderer enforces a minimum depth for particles so a
+        // source file with a zero depth still visibly follows camera motion.
+        if isParticle {
+            let minimumDepth: CGFloat = 0.65
+            if abs(depth.x) < minimumDepth {
+                depth.x = depth.x < 0 ? -minimumDepth : minimumDepth
+            }
+            if abs(depth.y) < minimumDepth {
+                depth.y = depth.y < 0 ? -minimumDepth : minimumDepth
+            }
+        }
+
+        parallaxNodes.append(ParallaxNode(node: node, basePosition: node.position, depth: depth))
+    }
+
+    fileprivate func updateParallax(in view: SKView?, currentTime: TimeInterval) {
+        guard let configuration = parallaxConfiguration,
+              !parallaxNodes.isEmpty,
+              let view,
+              let window = view.window,
+              view.bounds.width > 0,
+              view.bounds.height > 0 else {
+            return
+        }
+
+        let screenPoint = NSEvent.mouseLocation
+        let windowPoint = window.convertPoint(fromScreen: screenPoint)
+        let viewPoint = view.convert(windowPoint, from: nil)
+        let normalizedX = min(max((viewPoint.x - view.bounds.minX) / view.bounds.width, 0), 1)
+        // Wallpaper Engine scene JSON uses a top-left origin.  Convert the
+        // AppKit bottom-left coordinate into the same normalized convention.
+        let normalizedY = 1 - min(max((viewPoint.y - view.bounds.minY) / view.bounds.height, 0), 1)
+
+        let targetDisplacement = CGPoint(
+            x: (normalizedX - 0.5) * configuration.amount * configuration.mouseInfluence,
+            y: (normalizedY - 0.5) * configuration.amount * configuration.mouseInfluence
+        )
+        let deltaTime = lastParallaxUpdateTime.map { max(0, min(currentTime - $0, 0.1)) } ?? 0
+        lastParallaxUpdateTime = currentTime
+        // A zero delay means immediate response; positive values use the
+        // upstream-style time-scaled smoothing factor.
+        let smoothing = configuration.delay == 0 ? 1 : min(configuration.delay * deltaTime, 1)
+        parallaxDisplacement.x += (targetDisplacement.x - parallaxDisplacement.x) * smoothing
+        parallaxDisplacement.y += (targetDisplacement.y - parallaxDisplacement.y) * smoothing
+
+        for binding in parallaxNodes {
+            let offsetX = (binding.depth.x + configuration.amount)
+                * parallaxDisplacement.x * configuration.referenceSize
+            let offsetY = (binding.depth.y + configuration.amount)
+                * parallaxDisplacement.y * configuration.referenceSize
+            binding.node.position = CGPoint(
+                x: binding.basePosition.x + offsetX,
+                y: binding.basePosition.y + offsetY
+            )
+        }
+    }
+
     // MARK: - Asset Loading
 
     private func loadJSON<T: Decodable>(path: String, wallpaperDir: URL) -> T? {
@@ -640,5 +762,16 @@ class SceneWallpaperViewModel: ObservableObject {
     @objc func systemDidWake(_ notification: Notification) {
         print("[SceneVM] System woke up")
         skScene?.isPaused = false
+    }
+}
+
+/// SpriteKit invokes `update(_:)` once per rendered frame.  Keeping parallax
+/// here avoids a global mouse monitor and keeps movement scoped to the active
+/// wallpaper view.
+private final class WEParallaxSKScene: SKScene {
+    weak var parallaxOwner: SceneWallpaperViewModel?
+
+    override func update(_ currentTime: TimeInterval) {
+        parallaxOwner?.updateParallax(in: view, currentTime: currentTime)
     }
 }

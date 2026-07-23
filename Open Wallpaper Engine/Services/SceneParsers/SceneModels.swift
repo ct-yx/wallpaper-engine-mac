@@ -28,6 +28,10 @@ struct WESceneGeneral: Codable {
     var orthogonalprojection: WEOrthogonalProjection?
     var ambientcolor: String?
     var skylightcolor: String?
+    var cameraparallax: WEFlexibleBool?
+    var cameraparallaxamount: WEFlexValue?
+    var cameraparallaxdelay: WEFlexValue?
+    var cameraparallaxmouseinfluence: WEFlexValue?
 
     // These fields can be Bool, Int, or an object {"user":..,"value":..} in different wallpapers.
     // We only need the String fields above for rendering, so skip strict decoding of the rest.
@@ -39,10 +43,18 @@ struct WESceneGeneral: Codable {
         orthogonalprojection = try? container.decodeIfPresent(WEOrthogonalProjection.self, forKey: .orthogonalprojection)
         ambientcolor = try? container.decodeIfPresent(String.self, forKey: .ambientcolor)
         skylightcolor = try? container.decodeIfPresent(String.self, forKey: .skylightcolor)
+        cameraparallax = try? container.decodeIfPresent(WEFlexibleBool.self, forKey: .cameraparallax)
+        cameraparallaxamount = try? container.decodeIfPresent(WEFlexValue.self, forKey: .cameraparallaxamount)
+        cameraparallaxdelay = try? container.decodeIfPresent(WEFlexValue.self, forKey: .cameraparallaxdelay)
+        cameraparallaxmouseinfluence = try? container.decodeIfPresent(
+            WEFlexValue.self,
+            forKey: .cameraparallaxmouseinfluence
+        )
     }
 
     enum CodingKeys: String, CodingKey {
         case clearcolor, orthogonalprojection, ambientcolor, skylightcolor
+        case cameraparallax, cameraparallaxamount, cameraparallaxdelay, cameraparallaxmouseinfluence
     }
 }
 
@@ -78,7 +90,7 @@ struct WESceneObject: Codable {
     var alignment: String?
     var solid: Bool?
     var copybackground: Bool?
-    var parallaxDepth: String?
+    var parallaxDepth: WEFlexValue?
     var perspective: Bool?
 
     // Particle objects
@@ -114,7 +126,7 @@ struct WESceneObject: Codable {
         alignment = try? c.decodeIfPresent(String.self, forKey: .alignment)
         solid = try? c.decodeIfPresent(Bool.self, forKey: .solid)
         copybackground = try? c.decodeIfPresent(Bool.self, forKey: .copybackground)
-        parallaxDepth = try? c.decodeIfPresent(String.self, forKey: .parallaxDepth)
+        parallaxDepth = try? c.decodeIfPresent(WEFlexValue.self, forKey: .parallaxDepth)
         perspective = try? c.decodeIfPresent(Bool.self, forKey: .perspective)
     }
 }
@@ -158,6 +170,37 @@ struct WEScriptValue: Codable {
 
     enum CodingKeys: String, CodingKey {
         case script, value
+    }
+}
+
+/// Boolean user settings are stored either directly or as
+/// `{ "user": ..., "value": true }` in scene JSON.
+struct WEFlexibleBool: Codable {
+    let value: Bool
+
+    init(from decoder: Decoder) throws {
+        let singleValueContainer = try decoder.singleValueContainer()
+        if let boolValue = try? singleValueContainer.decode(Bool.self) {
+            value = boolValue
+        } else if let numericValue = try? singleValueContainer.decode(Double.self) {
+            value = numericValue != 0
+        } else if let stringValue = try? singleValueContainer.decode(String.self) {
+            value = ["1", "true", "yes", "on"].contains(stringValue.lowercased())
+        } else if let keyedContainer = try? decoder.container(keyedBy: CodingKeys.self),
+                  let nestedValue = try? keyedContainer.decode(WEFlexibleBool.self, forKey: .value) {
+            value = nestedValue.value
+        } else {
+            value = false
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(value)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case value
     }
 }
 
