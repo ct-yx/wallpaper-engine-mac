@@ -35,6 +35,15 @@ This project is built on top of the work of:
 
 Licensed under [GPL-3.0](LICENSE), same as the original project.
 
+## What's New in 0.9.5
+
+### TEXS Animated Scene Textures
+
+- **Multi-frame and atlas TEXS support** — The TEX parser walks every TEXB image and reads TEXS0001/0002/0003 frame tables, including source image indices, timing, and atlas rectangles.
+- **Sprite-sheet sidecars** — Static `materials/<texture>.tex-json` sprite-sheet sequences now animate on scene image layers too; both common historical sidecar spellings are accepted.
+- **More native texture formats** — Raw RGBA/RGB, RG88, and R8 TEX mipmaps now render in addition to DXT1/DXT3/DXT5 and embedded PNG/JPEG data. TEXB0004 non-video containers follow the upstream v3-compatible mipmap layout.
+- **Validated binary parsing** — Image/mipmap/frame records have bounds checks and were verified with synthetic multi-image TEXS, atlas TEXS, sidecar, and raw-RGBA fixtures.
+
 ## What's New in 0.9.4
 
 ### Mouse Camera Parallax for Scene Wallpapers
@@ -149,7 +158,7 @@ The import panel now correctly handles both individual wallpaper folders and par
 - **Audio-reactive scripts** — Wallpaper Engine's JavaScript-based audio visualization scripts are not executed. Properties with scripts fall back to their static `value`.
 - **Shader effects** — Custom GLSL shaders (bloom, blur, color correction) are not applied.
 - **Camera parallax** — Common orthographic mouse parallax is supported. Perspective-camera motion and camera shake are not yet implemented.
-- **Animated scenes** — Sprite animations and timeline-based object animations are not supported.
+- **Animated scenes** — TEXS multi-image and atlas animations plus `.tex-json` sprite sheets work on scene image layers. Particle-frame animation and timeline/script-driven object animation are not yet implemented.
 - **Some JPEG thumbnails** — A small number of TEXB format 1 files contain non-standard JPEG data that macOS cannot decode. These are typically DXT-compressed textures misidentified as format 1.
 
 ## Supported Wallpaper Types

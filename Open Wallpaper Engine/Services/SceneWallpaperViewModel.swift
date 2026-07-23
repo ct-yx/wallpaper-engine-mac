@@ -42,6 +42,11 @@ class SceneWallpaperViewModel: ObservableObject {
         let referenceSize: CGFloat
     }
 
+    private struct SceneTextureAsset {
+        let image: NSImage
+        let animationFrames: [TEXAnimationFrame]
+    }
+
     init(wallpaper: WEWallpaper) {
         self.currentWallpaper = wallpaper
         Self.log("init: wallpaper=\(wallpaper.project.title) dir=\(wallpaper.wallpaperDirectory.path)")
@@ -188,11 +193,15 @@ class SceneWallpaperViewModel: ObservableObject {
 
         // Load texture: try .tex file first, then common image formats
         Self.log("Loading texture '\(textureName)' for '\(obj.name ?? "")'")
-        let image = loadTexture(named: textureName, materialDir: materialPath, wallpaperDir: wallpaperDir)
-        guard let image = image else {
+        guard let textureAsset = loadTextureAsset(
+            named: textureName,
+            materialDir: materialPath,
+            wallpaperDir: wallpaperDir
+        ) else {
             Self.log("FAILED to load texture '\(textureName)' from material dir '\(materialPath)'")
             return nil
         }
+        let image = textureAsset.image
         Self.log("Texture loaded: \(image.size)")
 
         let texture = SKTexture(image: image)
@@ -233,6 +242,8 @@ class SceneWallpaperViewModel: ObservableObject {
             default: node.blendMode = .alpha
             }
         }
+
+        applyTextureAnimation(textureAsset.animationFrames, to: node)
 
         return node
     }
@@ -643,6 +654,18 @@ class SceneWallpaperViewModel: ObservableObject {
         }
     }
 
+    private func applyTextureAnimation(_ frames: [TEXAnimationFrame], to node: SKSpriteNode) {
+        guard frames.count > 1 else { return }
+
+        var actions: [SKAction] = []
+        actions.reserveCapacity(frames.count * 2)
+        for frame in frames {
+            actions.append(SKAction.setTexture(SKTexture(image: frame.image), resize: false))
+            actions.append(SKAction.wait(forDuration: max(frame.duration, 1.0 / 60.0)))
+        }
+        node.run(.repeatForever(.sequence(actions)), withKey: "wallpaper-engine-texs-animation")
+    }
+
     // MARK: - Asset Loading
 
     private func loadJSON<T: Decodable>(path: String, wallpaperDir: URL) -> T? {
@@ -657,6 +680,14 @@ class SceneWallpaperViewModel: ObservableObject {
     }
 
     private func loadTexture(named name: String, materialDir: String, wallpaperDir: URL) -> NSImage? {
+        loadTextureAsset(named: name, materialDir: materialDir, wallpaperDir: wallpaperDir)?.image
+    }
+
+    private func loadTextureAsset(
+        named name: String,
+        materialDir: String,
+        wallpaperDir: URL
+    ) -> SceneTextureAsset? {
         // Build candidate .tex paths: relative to material dir, then relative to materials/ root
         let materialDirPath = (materialDir as NSString).deletingLastPathComponent
         var texPaths = [String]()
@@ -677,7 +708,15 @@ class SceneWallpaperViewModel: ObservableObject {
                 Self.log("  TEX from PKG '\(texPath)' size=\(texData.count)")
                 let texParser = TEXParser(data: Data(texData))  // Copy to reset indices
                 if let image = texParser.extractImage() {
-                    return image
+                    return SceneTextureAsset(
+                        image: image,
+                        animationFrames: texParser.extractAnimationFrames(
+                            spriteSheetMetadata: loadSpriteSheetMetadata(
+                                forTexturePath: texPath,
+                                wallpaperDir: wallpaperDir
+                            )
+                        )
+                    )
                 }
                 Self.log("  TEXParser.extractImage() returned nil for '\(texPath)'")
             }
@@ -687,7 +726,15 @@ class SceneWallpaperViewModel: ObservableObject {
             if let texData = try? Data(contentsOf: texURL) {
                 let texParser = TEXParser(data: texData)
                 if let image = texParser.extractImage() {
-                    return image
+                    return SceneTextureAsset(
+                        image: image,
+                        animationFrames: texParser.extractAnimationFrames(
+                            spriteSheetMetadata: loadSpriteSheetMetadata(
+                                forTexturePath: texPath,
+                                wallpaperDir: wallpaperDir
+                            )
+                        )
+                    )
                 }
             }
         }
@@ -696,13 +743,41 @@ class SceneWallpaperViewModel: ObservableObject {
         for ext in ["png", "jpg", "jpeg", "gif"] {
             let imgPath = materialDirPath.isEmpty ? "\(name).\(ext)" : "\(materialDirPath)/\(name).\(ext)"
             if let parser = pkgParser, let imgData = parser.extractFile(named: imgPath) {
-                if let image = NSImage(data: imgData) { return image }
+                if let image = NSImage(data: imgData) {
+                    return SceneTextureAsset(image: image, animationFrames: [])
+                }
             }
             let imgURL = wallpaperDir.appending(path: imgPath)
-            if let image = NSImage(contentsOf: imgURL) { return image }
+            if let image = NSImage(contentsOf: imgURL) {
+                return SceneTextureAsset(image: image, animationFrames: [])
+            }
         }
 
         Self.log("  No texture found for '\(name)'")
+        return nil
+    }
+
+    /// The reference renderer looks for `materials/<texture>.tex-json` to
+    /// obtain static sprite-sheet sequences.  Keep two historical spellings
+    /// as fallbacks because Workshop assets exist with both `.tex-json` and
+    /// `.tex.json` names.
+    private func loadSpriteSheetMetadata(forTexturePath texPath: String, wallpaperDir: URL) -> Data? {
+        let pathWithoutExtension = (texPath as NSString).deletingPathExtension
+        let candidates = [
+            "\(pathWithoutExtension).tex-json",
+            "\(texPath)-json",
+            "\(texPath).json",
+        ]
+
+        for path in candidates {
+            if let parser = pkgParser, let data = parser.extractFile(named: path) {
+                return data
+            }
+            let url = wallpaperDir.appending(path: path)
+            if let data = try? Data(contentsOf: url) {
+                return data
+            }
+        }
         return nil
     }
 

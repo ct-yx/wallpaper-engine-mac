@@ -19,8 +19,14 @@ struct TEXMetadata {
     let height: UInt32
 }
 
+struct TEXAnimationFrame {
+    let image: NSImage
+    let duration: TimeInterval
+}
+
 class TEXParser {
     private let data: Data
+    private static let maximumDecodedPixels = 64 * 1024 * 1024
 
     init(data: Data) {
         self.data = data
@@ -28,17 +34,11 @@ class TEXParser {
 
     /// Extract the first image from this TEX container.
     func extractImage() -> NSImage? {
-        if let metadata = readTEXIMetadata(),
-           let mipmap = readFirstMipmap() {
-            switch metadata.format {
-            case 7: // DXT1 / BC1
-                if let image = decodeDXT(mipmap, metadata: metadata, format: .dxt1) { return image }
-            case 6: // DXT3 / BC2
-                if let image = decodeDXT(mipmap, metadata: metadata, format: .dxt3) { return image }
-            case 4: // DXT5 / BC3
-                if let image = decodeDXT(mipmap, metadata: metadata, format: .dxt5) { return image }
-            default:
-                break
+        if let metadata = readTEXIMetadata() {
+            if let mipmap = readFirstMipmap() {
+                if let image = decodeMipmapImage(mipmap, metadata: metadata) {
+                    return image
+                }
             }
         }
 
@@ -99,6 +99,50 @@ class TEXParser {
             return Data(texbData[pngOffset...])
         }
         return nil
+    }
+
+    /// Decode animations defined by TEXS or an optional `.tex-json` sprite
+    /// sheet sidecar.  TEXS can either refer to multiple full images (GIF-like
+    /// data) or rectangles inside one atlas image; both forms occur in Workshop
+    /// assets and the upstream renderer handles them through the same frame
+    /// table.
+    func extractAnimationFrames(spriteSheetMetadata: Data? = nil) -> [TEXAnimationFrame] {
+        guard let metadata = readTEXIMetadata(),
+              let mipmaps = readFirstMipmaps(),
+              !mipmaps.isEmpty else {
+            return []
+        }
+
+        let decodedImages = mipmaps.map { decodeMipmapImage($0, metadata: metadata) }
+        if let descriptors = readAnimationDescriptors(), descriptors.count > 1 {
+            if decodedImages.count > 1 {
+                let frames = descriptors.compactMap { descriptor -> TEXAnimationFrame? in
+                    guard descriptor.imageIndex >= 0,
+                          descriptor.imageIndex < decodedImages.count,
+                          let image = decodedImages[descriptor.imageIndex] else {
+                        return nil
+                    }
+                    return TEXAnimationFrame(image: image, duration: descriptor.duration)
+                }
+                if frames.count > 1 {
+                    return frames
+                }
+            } else if decodedImages.count == 1, let sourceImage = decodedImages[0] {
+                let frames = descriptors.compactMap { descriptor in
+                    croppedAnimationFrame(from: sourceImage, descriptor: descriptor)
+                }
+                if frames.count > 1 {
+                    return frames
+                }
+            }
+        }
+
+        guard decodedImages.count == 1,
+              let sourceImage = decodedImages[0],
+              let spriteSheetMetadata else {
+            return []
+        }
+        return spriteSheetAnimationFrames(from: sourceImage, metadata: spriteSheetMetadata)
     }
 
     // MARK: - Private
@@ -162,28 +206,62 @@ class TEXParser {
     /// upstream engine. Unlike JPEG/PNG payloads, DXT pixels cannot be found
     /// by scanning for a file magic value and must be read from this structure.
     private func readFirstMipmap() -> TEXMipmap? {
+        readFirstMipmaps()?.first
+    }
+
+    /// Read the primary mipmap for every TEXB image. Animated TEX textures
+    /// store each GIF-like frame as a separate image and append a TEXS table
+    /// after all mipmap data.
+    private func readFirstMipmaps() -> [TEXMipmap]? {
         guard let container = findTEXBContainer() else { return nil }
         var cursor = container.contentOffset
 
-        guard let imageCount = readUInt32(at: cursor), imageCount > 0 else { return nil }
+        guard let imageCount = readUInt32(at: cursor), imageCount > 0, imageCount <= 10_000 else { return nil }
         cursor += 4
 
+        // TEXB0004 is only structurally different for MP4 texture payloads.
+        // The Linux renderer normalizes all other v4 containers to the v3
+        // mipmap layout after reading its extra header fields.
+        let mipmapContainerVersion: Int
         switch container.version {
         case 3:
             // TEXB0003 stores the FreeImage format after imageCount.
+            guard cursor + 4 <= data.count else { return nil }
             cursor += 4
+            mipmapContainerVersion = 3
         case 4:
             // TEXB0004 stores FreeImage format and an MP4 flag here.
+            guard let isMP4 = readUInt32(at: cursor + 4), cursor + 8 <= data.count else { return nil }
             cursor += 8
+            mipmapContainerVersion = isMP4 == 1 ? 4 : 3
+        case 2, 1:
+            mipmapContainerVersion = container.version
         default:
-            break
+            return nil
         }
 
-        guard let mipmapCount = readUInt32(at: cursor), mipmapCount > 0 else { return nil }
-        cursor += 4
+        var firstMipmaps: [TEXMipmap] = []
+        firstMipmaps.reserveCapacity(Int(imageCount))
+        for _ in 0..<imageCount {
+            guard let mipmapCount = readUInt32(at: cursor), mipmapCount > 0, mipmapCount <= 64 else { return nil }
+            cursor += 4
 
-        if container.version == 4 {
-            // Editor-only TEXB0004 fields, followed by a null-terminated JSON string.
+            for mipmapIndex in 0..<mipmapCount {
+                guard let mipmap = readMipmap(containerVersion: mipmapContainerVersion, cursor: &cursor) else {
+                    return nil
+                }
+                if mipmapIndex == 0 {
+                    firstMipmaps.append(mipmap)
+                }
+            }
+        }
+
+        return firstMipmaps
+    }
+
+    private func readMipmap(containerVersion: Int, cursor: inout Int) -> TEXMipmap? {
+        if containerVersion == 4 {
+            // Editor-only fields and a JSON string precede every v4 entry.
             guard cursor + 8 <= data.count else { return nil }
             cursor += 8
             guard skipNullTerminatedString(at: &cursor), cursor + 4 <= data.count else { return nil }
@@ -191,12 +269,12 @@ class TEXParser {
         }
 
         guard let width = readUInt32(at: cursor),
-              let height = readUInt32(at: cursor) else { return nil }
+              let height = readUInt32(at: cursor + 4) else { return nil }
         cursor += 8
 
         var compression: UInt32 = 0
         var uncompressedSize: Int?
-        if container.version != 1 {
+        if containerVersion != 1 {
             guard let parsedCompression = readUInt32(at: cursor),
                   let parsedSize = readUInt32(at: cursor + 4) else { return nil }
             compression = parsedCompression
@@ -209,6 +287,7 @@ class TEXParser {
         let byteCount = Int(storedSize)
         guard byteCount >= 0, cursor + byteCount <= data.count else { return nil }
         let storedPixels = Data(data[cursor..<(cursor + byteCount)])
+        cursor += byteCount
 
         let pixels: Data
         switch compression {
@@ -227,10 +306,324 @@ class TEXParser {
         return TEXMipmap(width: width, height: height, pixels: pixels)
     }
 
+    private func decodeMipmapImage(_ mipmap: TEXMipmap, metadata: TEXMetadata) -> NSImage? {
+        switch metadata.format {
+        case 7:
+            return decodeDXT(mipmap, metadata: metadata, format: .dxt1)
+        case 6:
+            return decodeDXT(mipmap, metadata: metadata, format: .dxt3)
+        case 4:
+            return decodeDXT(mipmap, metadata: metadata, format: .dxt5)
+        case 0:
+            // Despite its historical ARGB8888 name, Wallpaper Engine uploads
+            // this format to OpenGL as RGBA8.  Preserve the logical TEXI size
+            // while skipping power-of-two padding in the stored mipmap.
+            return decodeRawPixels(mipmap, metadata: metadata, bytesPerPixel: 4)
+        case 1:
+            // Some older assets label an RGBA payload as RGB888; prefer the
+            // four-byte layout whenever its stored mipmap is large enough.
+            guard mipmap.width > 0, mipmap.height > 0,
+                  mipmap.width <= 32_768, mipmap.height <= 32_768 else {
+                return nil
+            }
+            let pixelCount = Int(mipmap.width) * Int(mipmap.height)
+            let bytesPerPixel = mipmap.pixels.count >= pixelCount * 4 ? 4 : 3
+            return decodeRawPixels(mipmap, metadata: metadata, bytesPerPixel: bytesPerPixel)
+        case 8:
+            return decodeRG88(mipmap, metadata: metadata)
+        case 9:
+            return decodeR8(mipmap, metadata: metadata)
+        default:
+            return decodeEncodedImage(mipmap.pixels)
+        }
+    }
+
+    private func decodeRawPixels(
+        _ mipmap: TEXMipmap,
+        metadata: TEXMetadata,
+        bytesPerPixel: Int
+    ) -> NSImage? {
+        let storageWidth = Int(mipmap.width)
+        let storageHeight = Int(mipmap.height)
+        guard storageWidth > 0, storageHeight > 0,
+              storageWidth <= 32_768, storageHeight <= 32_768,
+              storageWidth * storageHeight <= Self.maximumDecodedPixels,
+              mipmap.pixels.count >= storageWidth * storageHeight * bytesPerPixel else {
+            return nil
+        }
+
+        let logicalWidth = min(max(Int(metadata.width), 1), storageWidth)
+        let logicalHeight = min(max(Int(metadata.height), 1), storageHeight)
+        var rgba = [UInt8](repeating: 0, count: logicalWidth * logicalHeight * 4)
+        for y in 0..<logicalHeight {
+            for x in 0..<logicalWidth {
+                let source = (y * storageWidth + x) * bytesPerPixel
+                let destination = (y * logicalWidth + x) * 4
+                rgba[destination] = mipmap.pixels[source]
+                rgba[destination + 1] = mipmap.pixels[source + min(1, bytesPerPixel - 1)]
+                rgba[destination + 2] = mipmap.pixels[source + min(2, bytesPerPixel - 1)]
+                rgba[destination + 3] = bytesPerPixel >= 4 ? mipmap.pixels[source + 3] : 255
+            }
+        }
+        return makeImage(rgba: rgba, width: logicalWidth, height: logicalHeight)
+    }
+
+    private func decodeRG88(_ mipmap: TEXMipmap, metadata: TEXMetadata) -> NSImage? {
+        let storageWidth = Int(mipmap.width)
+        let storageHeight = Int(mipmap.height)
+        guard storageWidth > 0, storageHeight > 0,
+              storageWidth <= 32_768, storageHeight <= 32_768,
+              storageWidth * storageHeight <= Self.maximumDecodedPixels,
+              mipmap.pixels.count >= storageWidth * storageHeight * 2 else {
+            return nil
+        }
+
+        let logicalWidth = min(max(Int(metadata.width), 1), storageWidth)
+        let logicalHeight = min(max(Int(metadata.height), 1), storageHeight)
+        let alphaPriority = metadata.flags & 524_288 != 0
+        var rgba = [UInt8](repeating: 0, count: logicalWidth * logicalHeight * 4)
+        for y in 0..<logicalHeight {
+            for x in 0..<logicalWidth {
+                let source = (y * storageWidth + x) * 2
+                let destination = (y * logicalWidth + x) * 4
+                let red = mipmap.pixels[source]
+                let green = mipmap.pixels[source + 1]
+                if alphaPriority {
+                    rgba[destination] = 255
+                    rgba[destination + 1] = 255
+                    rgba[destination + 2] = 255
+                    rgba[destination + 3] = green
+                } else {
+                    rgba[destination] = red
+                    rgba[destination + 1] = green
+                    rgba[destination + 2] = 0
+                    rgba[destination + 3] = 255
+                }
+            }
+        }
+        return makeImage(rgba: rgba, width: logicalWidth, height: logicalHeight)
+    }
+
+    private func decodeR8(_ mipmap: TEXMipmap, metadata: TEXMetadata) -> NSImage? {
+        let storageWidth = Int(mipmap.width)
+        let storageHeight = Int(mipmap.height)
+        guard storageWidth > 0, storageHeight > 0,
+              storageWidth <= 32_768, storageHeight <= 32_768,
+              storageWidth * storageHeight <= Self.maximumDecodedPixels,
+              mipmap.pixels.count >= storageWidth * storageHeight else {
+            return nil
+        }
+
+        let logicalWidth = min(max(Int(metadata.width), 1), storageWidth)
+        let logicalHeight = min(max(Int(metadata.height), 1), storageHeight)
+        let alphaPriority = metadata.flags & 524_288 != 0
+        var rgba = [UInt8](repeating: 0, count: logicalWidth * logicalHeight * 4)
+        for y in 0..<logicalHeight {
+            for x in 0..<logicalWidth {
+                let value = mipmap.pixels[y * storageWidth + x]
+                let destination = (y * logicalWidth + x) * 4
+                rgba[destination] = alphaPriority ? 255 : value
+                rgba[destination + 1] = alphaPriority ? 255 : value
+                rgba[destination + 2] = alphaPriority ? 255 : value
+                rgba[destination + 3] = alphaPriority ? value : 255
+            }
+        }
+        return makeImage(rgba: rgba, width: logicalWidth, height: logicalHeight)
+    }
+
+    private func decodeEncodedImage(_ pixels: Data) -> NSImage? {
+        if let jpegOffset = findJPEGMagic(in: pixels) {
+            if let endOffset = findJPEGEnd(in: pixels, from: jpegOffset),
+               let image = NSImage(data: Data(pixels[jpegOffset...endOffset])) {
+                return image
+            }
+            if let image = NSImage(data: Data(pixels[jpegOffset...])) {
+                return image
+            }
+        }
+        if let pngOffset = findPNGMagic(in: pixels),
+           let image = NSImage(data: Data(pixels[pngOffset...])) {
+            return image
+        }
+        return NSImage(data: pixels)
+    }
+
+    private struct TEXAnimationDescriptor {
+        let imageIndex: Int
+        let duration: TimeInterval
+        let x: CGFloat
+        let y: CGFloat
+        let width: CGFloat
+        let height: CGFloat
+    }
+
+    private func readAnimationDescriptors() -> [TEXAnimationDescriptor]? {
+        let version: Int
+        let offset: Int
+        if let found = findMagic("TEXS0003\0") {
+            version = 3
+            offset = found + 9
+        } else if let found = findMagic("TEXS0002\0") {
+            version = 2
+            offset = found + 9
+        } else if let found = findMagic("TEXS0001\0") {
+            version = 1
+            offset = found + 9
+        } else {
+            return nil
+        }
+
+        guard let frameCount = readUInt32(at: offset), frameCount > 0, frameCount <= 10_000 else {
+            return nil
+        }
+        var cursor = offset + 4
+        if version == 3 {
+            // TEXS0003 stores GIF dimensions before the per-frame records.
+            guard cursor + 8 <= data.count else { return nil }
+            cursor += 8
+        }
+
+        var frames: [TEXAnimationDescriptor] = []
+        frames.reserveCapacity(Int(frameCount))
+        for _ in 0..<frameCount {
+            // Every TEXS record is 32 bytes.  V1 stores geometry as integers;
+            // V2/V3 store it as floats.  The last field is the source frame
+            // height in both layouts (the two middle fields are editor data).
+            guard cursor + 32 <= data.count,
+                  let imageIndex = readUInt32(at: cursor),
+                  let frameTime = readFloat32(at: cursor + 4) else {
+                return nil
+            }
+            let geometry: (x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat)
+            if version == 1 {
+                guard let x = readUInt32(at: cursor + 8),
+                      let y = readUInt32(at: cursor + 12),
+                      let width = readUInt32(at: cursor + 16),
+                      let height = readUInt32(at: cursor + 28) else {
+                    return nil
+                }
+                geometry = (CGFloat(x), CGFloat(y), CGFloat(width), CGFloat(height))
+            } else {
+                guard let x = readFloat32(at: cursor + 8),
+                      let y = readFloat32(at: cursor + 12),
+                      let width = readFloat32(at: cursor + 16),
+                      let height = readFloat32(at: cursor + 28),
+                      x.isFinite, y.isFinite, width.isFinite, height.isFinite else {
+                    return nil
+                }
+                geometry = (CGFloat(x), CGFloat(y), CGFloat(width), CGFloat(height))
+            }
+            let duration = frameTime.isFinite && frameTime > 0
+                ? TimeInterval(frameTime)
+                : 1.0 / 60.0
+            frames.append(TEXAnimationDescriptor(
+                imageIndex: Int(imageIndex),
+                duration: duration,
+                x: geometry.x,
+                y: geometry.y,
+                width: geometry.width,
+                height: geometry.height
+            ))
+            cursor += 32
+        }
+        return frames
+    }
+
+    private struct TEXSpriteSheetSequence: Decodable {
+        let frames: Int?
+        let width: Double?
+        let height: Double?
+        let duration: Double?
+    }
+
+    private struct TEXSpriteSheetMetadata: Decodable {
+        let spritesheetsequences: [TEXSpriteSheetSequence]?
+    }
+
+    private func spriteSheetAnimationFrames(from image: NSImage, metadata: Data) -> [TEXAnimationFrame] {
+        guard let parsed = try? JSONDecoder().decode(TEXSpriteSheetMetadata.self, from: metadata),
+              let sequence = parsed.spritesheetsequences?.first,
+              let frameCount = sequence.frames,
+              let frameWidth = sequence.width,
+              let frameHeight = sequence.height,
+              frameCount > 1,
+              frameCount <= 10_000,
+              frameWidth.isFinite,
+              frameHeight.isFinite,
+              frameWidth > 0,
+              frameHeight > 0 else {
+            return []
+        }
+
+        guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return [] }
+        let columns = Int((Double(cgImage.width) / frameWidth).rounded())
+        let rows = Int((Double(cgImage.height) / frameHeight).rounded())
+        guard columns > 0, rows > 0, columns * rows >= frameCount else { return [] }
+
+        let configuredDuration = sequence.duration ?? 0
+        let totalDuration = configuredDuration.isFinite && configuredDuration > 0
+            ? configuredDuration
+            : Double(frameCount) / 60
+        let duration = TimeInterval(totalDuration / Double(frameCount))
+        let frameWidthCGFloat = CGFloat(frameWidth)
+        let frameHeightCGFloat = CGFloat(frameHeight)
+        return (0..<frameCount).compactMap { index in
+            let descriptor = TEXAnimationDescriptor(
+                imageIndex: 0,
+                duration: duration,
+                x: CGFloat(index % columns) * frameWidthCGFloat,
+                y: CGFloat(index / columns) * frameHeightCGFloat,
+                width: frameWidthCGFloat,
+                height: frameHeightCGFloat
+            )
+            return croppedAnimationFrame(from: image, descriptor: descriptor)
+        }
+    }
+
+    private func croppedAnimationFrame(
+        from image: NSImage,
+        descriptor: TEXAnimationDescriptor
+    ) -> TEXAnimationFrame? {
+        guard descriptor.x.isFinite,
+              descriptor.y.isFinite,
+              descriptor.width.isFinite,
+              descriptor.height.isFinite,
+              descriptor.x >= 0,
+              descriptor.y >= 0,
+              descriptor.width > 0,
+              descriptor.height > 0,
+              let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
+            return nil
+        }
+
+        // Frame coordinates are authored with a top-left origin.  CGImage
+        // cropping uses a bottom-left origin, so invert Y before extracting.
+        let crop = CGRect(
+            x: descriptor.x,
+            y: CGFloat(cgImage.height) - descriptor.y - descriptor.height,
+            width: descriptor.width,
+            height: descriptor.height
+        ).integral
+        guard crop.minX >= 0,
+              crop.minY >= 0,
+              crop.maxX <= CGFloat(cgImage.width),
+              crop.maxY <= CGFloat(cgImage.height),
+              let frameImage = cgImage.cropping(to: crop) else {
+            return nil
+        }
+
+        return TEXAnimationFrame(
+            image: NSImage(cgImage: frameImage, size: crop.size),
+            duration: descriptor.duration
+        )
+    }
+
     private func decodeDXT(_ mipmap: TEXMipmap, metadata: TEXMetadata, format: DXTFormat) -> NSImage? {
         let storageWidth = Int(mipmap.width)
         let storageHeight = Int(mipmap.height)
-        guard storageWidth > 0, storageHeight > 0 else { return nil }
+        guard storageWidth > 0, storageHeight > 0,
+              storageWidth <= 32_768, storageHeight <= 32_768,
+              storageWidth * storageHeight <= Self.maximumDecodedPixels else { return nil }
 
         let logicalWidth = min(max(Int(metadata.width), 1), storageWidth)
         let logicalHeight = min(max(Int(metadata.height), 1), storageHeight)
@@ -422,6 +815,11 @@ class TEXParser {
             | (UInt32(data[offset + 1]) << 8)
             | (UInt32(data[offset + 2]) << 16)
             | (UInt32(data[offset + 3]) << 24)
+    }
+
+    private func readFloat32(at offset: Int) -> Float? {
+        guard let bitPattern = readUInt32(at: offset) else { return nil }
+        return Float(bitPattern: bitPattern)
     }
 
     private func skipNullTerminatedString(at cursor: inout Int) -> Bool {
