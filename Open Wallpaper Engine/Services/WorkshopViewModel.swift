@@ -129,6 +129,10 @@ class WorkshopViewModel: ObservableObject {
         return FileManager.default.fileExists(atPath: destination.path)
     }
 
+    func hasCachedDownload(_ item: WorkshopItem) -> Bool {
+        steamCmd.hasCachedWorkshopContent(workshopId: item.id)
+    }
+
     func toggleTag(_ tag: String, in group: WorkshopTagGroup) {
         switch group {
         case .rating, .type:

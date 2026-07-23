@@ -35,6 +35,14 @@ This project is built on top of the work of:
 
 Licensed under [GPL-3.0](LICENSE), same as the original project.
 
+## What's New in 0.9.6
+
+### SteamCMD Cache and Library Reliability
+
+- **Reuse downloaded content immediately** — If SteamCMD has already downloaded a Workshop item, its detail view imports the cached files directly without starting another SteamCMD process or requiring a restored login session.
+- **Find every configured Steam library** — The importer reads `libraryfolders.vdf` in addition to standard macOS, Homebrew, and standalone SteamCMD locations, so content stored in a secondary or external Steam library is discovered correctly.
+- **Safe import remains atomic** — Cached and newly downloaded content both use the staging-directory replacement path, preventing half-copied wallpapers from appearing in the local library.
+
 ## What's New in 0.9.5
 
 ### TEXS Animated Scene Textures

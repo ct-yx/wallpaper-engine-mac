@@ -605,7 +605,7 @@ private struct WorkshopItemDetailView: View {
                     downloadButton
                 }
             case .none:
-                if viewModel.steamCmd.isReadyForDownloads {
+                if viewModel.steamCmd.isReadyForDownloads || viewModel.hasCachedDownload(item) {
                     downloadButton
                 } else {
                     Button("Set Up Downloads") {

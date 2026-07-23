@@ -279,15 +279,33 @@ class SteamCmdService: ObservableObject {
             downloadProgress[workshopId] = .failed(String(localized: "SteamCMD is required to download wallpapers."))
             return
         }
-        guard isLoggedIn else {
-            downloadProgress[workshopId] = .failed(String(localized: "Log in to Steam before downloading wallpapers."))
-            return
-        }
 
         downloadProgress[workshopId] = .downloading(status: String(localized: "Queued"))
+        let username = steamUsername
 
         downloadQueue.async { [weak self] in
             guard let self = self else { return }
+
+            // A prior SteamCMD invocation may already have finished writing
+            // this item when the app was relaunched or interrupted before the
+            // library copy.  Reuse it immediately instead of starting the
+            // SteamCMD bootstrap process again.
+            if let sourceDir = self.findWorkshopContentDirectory(
+                workshopId: workshopId,
+                cmdPath: cmdPath
+            ) {
+                self.importWorkshopContent(at: sourceDir, workshopId: workshopId)
+                return
+            }
+
+            guard self.isLoggedIn, !username.isEmpty else {
+                DispatchQueue.main.async {
+                    self.downloadProgress[workshopId] = .failed(
+                        String(localized: "Log in to Steam before downloading wallpapers.")
+                    )
+                }
+                return
+            }
 
             DispatchQueue.main.async {
                 self.downloadProgress[workshopId] = .downloading(status: String(localized: "Starting steamcmd..."))
@@ -298,7 +316,7 @@ class SteamCmdService: ObservableObject {
             process.executableURL = self.steamCmdExecutableURL(cmdPath: cmdPath)
             process.currentDirectoryURL = self.steamCmdWorkingDirectory(cmdPath: cmdPath)
             process.arguments = [
-                "+login", self.steamUsername,
+                "+login", username,
                 "+workshop_download_item", "431960", workshopId, "validate",
                 "+quit"
             ]
@@ -366,36 +384,8 @@ class SteamCmdService: ObservableObject {
             if let sourceDir = self.findWorkshopContentDirectory(
                 workshopId: workshopId,
                 cmdPath: cmdPath
-            ),
-               FileManager.default.fileExists(atPath: sourceDir.path) {
-                DispatchQueue.main.async {
-                    self.downloadProgress[workshopId] = .downloading(status: String(localized: "Copying to library..."))
-                }
-
-                let fm = FileManager.default
-                let dest = fm.wallpapersDirectory.appending(path: workshopId)
-                let staging = fm.wallpapersDirectory.appending(
-                    path: ".\(workshopId).downloading-\(UUID().uuidString)"
-                )
-                do {
-                    try fm.copyItem(at: sourceDir, to: staging)
-                    if fm.fileExists(atPath: dest.path) {
-                        try fm.removeItem(at: dest)
-                    }
-                    try fm.moveItem(at: staging, to: dest)
-                } catch {
-                    try? fm.removeItem(at: staging)
-                    DispatchQueue.main.async {
-                        self.downloadProgress[workshopId] = .failed(
-                            String(format: String(localized: "Copy failed: %@"), error.localizedDescription)
-                        )
-                    }
-                    return
-                }
-
-                DispatchQueue.main.async {
-                    self.downloadProgress[workshopId] = .completed
-                }
+            ) {
+                self.importWorkshopContent(at: sourceDir, workshopId: workshopId)
                 return
             }
 
@@ -411,6 +401,43 @@ class SteamCmdService: ObservableObject {
             }
             DispatchQueue.main.async {
                 self.downloadProgress[workshopId] = .failed(failure)
+            }
+        }
+    }
+
+    /// Returns true when SteamCMD has already downloaded an item into one of
+    /// its local libraries.  This path can be imported without starting a new
+    /// SteamCMD process or restoring a Steam session.
+    func hasCachedWorkshopContent(workshopId: String) -> Bool {
+        guard let cmdPath = steamCmdPath else { return false }
+        return findWorkshopContentDirectory(workshopId: workshopId, cmdPath: cmdPath) != nil
+    }
+
+    private func importWorkshopContent(at sourceDir: URL, workshopId: String) {
+        DispatchQueue.main.async {
+            self.downloadProgress[workshopId] = .downloading(status: String(localized: "Copying to library..."))
+        }
+
+        let fm = FileManager.default
+        let destination = fm.wallpapersDirectory.appending(path: workshopId)
+        let staging = fm.wallpapersDirectory.appending(
+            path: ".\(workshopId).downloading-\(UUID().uuidString)"
+        )
+        do {
+            try fm.copyItem(at: sourceDir, to: staging)
+            if fm.fileExists(atPath: destination.path) {
+                try fm.removeItem(at: destination)
+            }
+            try fm.moveItem(at: staging, to: destination)
+            DispatchQueue.main.async {
+                self.downloadProgress[workshopId] = .completed
+            }
+        } catch {
+            try? fm.removeItem(at: staging)
+            DispatchQueue.main.async {
+                self.downloadProgress[workshopId] = .failed(
+                    String(format: String(localized: "Copy failed: %@"), error.localizedDescription)
+                )
             }
         }
     }
@@ -458,22 +485,37 @@ class SteamCmdService: ObservableObject {
                 atPath: contentDirectory.path,
                 isDirectory: &isDirectory
             ) && isDirectory.boolValue
+                // SteamCMD creates the target directory before transfer
+                // completion.  `project.json` is the minimum item contract
+                // used by this app, so only reuse a complete cached download.
+                && FileManager.default.fileExists(
+                    atPath: contentDirectory.appending(path: "project.json").path
+                )
         }
         .map { $0.appending(path: "workshop/content/431960/\(workshopId)") }
     }
 
     private func steamAppsDirectories(cmdPath: String) -> [URL] {
-        // SteamCMD typically stores downloads relative to its install location.
-        // The user-level Steam directories cover Homebrew and manual packages
-        // whose launcher redirects its data directory after startup.
+        // SteamCMD normally stores downloads relative to its install location,
+        // but Homebrew wrappers and regular Steam installs can redirect content
+        // into any library listed in `libraryfolders.vdf`.  Search both the
+        // known macOS roots and every configured Steam library before reporting
+        // that an otherwise successful download is missing.
+        let home = FileManager.default.homeDirectoryForCurrentUser
         let workingDirectory = steamCmdWorkingDirectory(cmdPath: cmdPath)
-        let possiblePaths = [
+        let initialPaths = [
             workingDirectory.appending(path: "steamapps"),
-            FileManager.default.homeDirectoryForCurrentUser
+            home
                 .appending(path: "Library/Application Support/Steam/steamapps"),
-            FileManager.default.homeDirectoryForCurrentUser
+            home
                 .appending(path: "Steam/steamapps"),
+            home
+                .appending(path: ".steam/steam/steamapps"),
+            home
+                .appending(path: ".steam/steamcmd/steamapps"),
         ]
+
+        let possiblePaths = initialPaths + initialPaths.flatMap(librarySteamAppsDirectories)
 
         var seen = Set<String>()
         return possiblePaths.filter { path in
@@ -483,6 +525,46 @@ class SteamCmdService: ObservableObject {
             return FileManager.default.fileExists(atPath: path.path, isDirectory: &isDirectory)
                 && isDirectory.boolValue
         }
+    }
+
+    private func librarySteamAppsDirectories(from steamAppsDirectory: URL) -> [URL] {
+        let libraryFolders = steamAppsDirectory.appending(path: "libraryfolders.vdf")
+        guard let contents = try? String(contentsOf: libraryFolders, encoding: .utf8) else {
+            return []
+        }
+
+        // VDF stores each configured library as: "path" "/Volumes/...".
+        // Values can escape quotes and backslashes, so retain escaped pairs
+        // while matching and unescape them before constructing the URL.
+        let pattern = #""path"\s*"((?:\\.|[^"])*)""#
+        guard let expression = try? NSRegularExpression(pattern: pattern) else { return [] }
+        let range = NSRange(contents.startIndex..<contents.endIndex, in: contents)
+        return expression.matches(in: contents, range: range).compactMap { match in
+            guard let valueRange = Range(match.range(at: 1), in: contents) else { return nil }
+            let libraryRoot = URL(fileURLWithPath: unescapedVDFString(String(contents[valueRange])))
+            return libraryRoot.lastPathComponent == "steamapps"
+                ? libraryRoot
+                : libraryRoot.appending(path: "steamapps")
+        }
+    }
+
+    private func unescapedVDFString(_ value: String) -> String {
+        var result = ""
+        var isEscaping = false
+        for character in value {
+            if isEscaping {
+                result.append(character)
+                isEscaping = false
+            } else if character == "\\" {
+                isEscaping = true
+            } else {
+                result.append(character)
+            }
+        }
+        if isEscaping {
+            result.append("\\")
+        }
+        return result
     }
 
     private func steamCmdWorkingDirectory(cmdPath: String) -> URL {
