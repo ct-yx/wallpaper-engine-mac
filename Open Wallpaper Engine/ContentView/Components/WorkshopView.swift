@@ -8,16 +8,11 @@ struct WorkshopView: SubviewOfContentView {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            if !viewModel.steamCmd.isInstalled {
-                SteamCmdNotInstalledView(steamCmd: viewModel.steamCmd)
-            } else if !viewModel.steamCmd.isLoggedIn {
-                SteamLoginView(steamCmd: viewModel.steamCmd)
-            } else {
-                WorkshopBrowserView(viewModel: viewModel.workshopVM)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        // Workshop browsing and item details use the Steam Web API.  Do not
+        // make the entire browser wait for SteamCMD: it is only needed when
+        // the user actually chooses to download an item.
+        WorkshopBrowserView(viewModel: viewModel.workshopVM)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
@@ -113,7 +108,7 @@ private struct SteamLoginView: View {
                 .font(.title2)
                 .bold()
 
-            Text("Log in with your Steam account to browse and download wallpapers.\nYou must own Wallpaper Engine on Steam.")
+            Text("Log in with your Steam account to download wallpapers.\nYou must own Wallpaper Engine on Steam.")
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
                 .font(.callout)
@@ -174,17 +169,13 @@ private struct SteamLoginView: View {
                         .foregroundStyle(.secondary)
                 }
             }
-
-            // API Key section
-            VStack(spacing: 6) {
-                Divider().padding(.vertical, 8)
-                Text("You'll also need a Steam Web API key to browse the Workshop.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                APIKeyInputView {}
-            }
         }
         .padding(40)
+        .onAppear {
+            if username.isEmpty {
+                username = steamCmd.steamUsername
+            }
+        }
     }
 }
 
@@ -509,6 +500,7 @@ private struct WorkshopItemDetailView: View {
     let item: WorkshopItem
     @ObservedObject var viewModel: WorkshopViewModel
     @Environment(\.dismiss) private var dismiss
+    @State private var isDownloadSetupPresented = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -582,6 +574,9 @@ private struct WorkshopItemDetailView: View {
             .padding()
         }
         .frame(width: 620, height: 620)
+        .sheet(isPresented: $isDownloadSetupPresented) {
+            SteamDownloadSetupView(steamCmd: viewModel.steamCmd)
+        }
     }
 
     @ViewBuilder
@@ -610,12 +605,13 @@ private struct WorkshopItemDetailView: View {
                     downloadButton
                 }
             case .none:
-                if viewModel.steamCmd.isLoggedIn {
+                if viewModel.steamCmd.isReadyForDownloads {
                     downloadButton
                 } else {
-                    Text("Login to download")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
+                    Button("Set Up Downloads") {
+                        isDownloadSetupPresented = true
+                    }
+                    .buttonStyle(.bordered)
                 }
             }
         }
@@ -650,6 +646,46 @@ private struct WorkshopItemDetailView: View {
 
     private func localizedTagName(_ tag: String) -> String {
         workshopLocalizedTagName(tag)
+    }
+}
+
+private struct SteamDownloadSetupView: View {
+    @ObservedObject var steamCmd: SteamCmdService
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        Group {
+            if steamCmd.isReadyForDownloads {
+                VStack(spacing: 14) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 42))
+                        .foregroundStyle(.green)
+                    Text("Downloads Ready")
+                        .font(.title3.weight(.semibold))
+                    Text("SteamCMD is configured and its cached Steam session will be reused for downloads.")
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(.secondary)
+                    Button("Done") {
+                        dismiss()
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+                .frame(width: 440, height: 260)
+                .padding()
+            } else if !steamCmd.isInstalled {
+                VStack(spacing: 12) {
+                    Text("SteamCMD is only required to download wallpapers. Browsing and viewing details use the Steam Web API.")
+                        .multilineTextAlignment(.center)
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                    SteamCmdNotInstalledView(steamCmd: steamCmd)
+                }
+                .frame(width: 480)
+            } else {
+                SteamLoginView(steamCmd: steamCmd)
+                    .frame(width: 480)
+            }
+        }
     }
 }
 

@@ -35,6 +35,14 @@ Open Wallpaper Engine（修補版）
 
 採用 [GPL-3.0](LICENSE) 授權，與原始專案相同。
 
+## 0.9.2 新功能
+
+### 創意工坊存取與場景紋理
+
+- **先瀏覽，下載時再設定** — 創意工坊搜尋、篩選、連續捲動和桌布詳細資料僅使用 Steam Web API；只在詳細資料頁選擇下載時才需要設定 SteamCMD 與 Steam 登入。
+- **可靠的快取下載工作階段** — 開啟創意工坊不再啟動 SteamCMD。下載佇列會解析 Homebrew 符號連結，並重複使用同一份 SteamCMD 快取登入工作階段與創意工坊內容目錄。
+- **DXT 場景紋理** — TEX 解析器現可讀取 TEXB mipmap，並以軟體解碼 DXT1/BC1、DXT3/BC2、DXT5/BC3 紋理，包括 LZ4 壓縮的 mipmap。
+
 ## 0.9.1 新功能
 
 ### 應用程式內更新
@@ -109,18 +117,17 @@ Cmd+點擊選取多個桌布，右鍵選擇批次取消訂閱。
 
 **新實作包括：**
 - **PKG 解析器** — 讀取 Wallpaper Engine 的 PKGV 封存格式，提取 scene.json、模型、材質和紋理
-- **TEX 解析器** — 讀取 TEXV0005 紋理容器，從 TEXI/TEXB 區段提取嵌入的 JPEG/PNG 圖片
+- **TEX 解析器** — 讀取 TEXV0005 紋理容器，提取 JPEG/PNG 圖片，並以軟體解碼 DXT1/DXT3/DXT5 mipmap
 - **Scene JSON 解碼器** — 解析 scene.json，靈活處理多態欄位（值可為純類型或 `{"script":..,"value":..}` 物件）
 - **SpriteKit 渲染器** — 將場景圖層渲染為 SKSpriteNode，正確處理定位、尺寸、透明度、色彩調整和混合模式
 - **預覽回退** — 無法提取紋理時回退至 preview.jpg/png/gif
-- **TEXI 格式偵測** — 快速識別並跳過無法解碼的 DXT 壓縮紋理
+- **TEXI 格式偵測** — 讀取紋理格式與邏輯尺寸，以正確解析壓縮 mipmap
 
 ### 匯入 — 修復資料夾匯入
 匯入面板現在可正確處理單一桌布資料夾和包含多個桌布的父目錄。
 
 ## 目前限制
 
-- **DXT 紋理** — 使用 DXT1/DXT5 壓縮紋理（TEXI 格式 4/7/8）的桌布無法渲染。這些是需要軟體解壓縮器或 Metal 渲染的 GPU 原生壓縮格式。此類桌布會回退至預覽圖。
 - **粒子效果** — 場景粒子系統（雨、雪、閃光）已解析但在渲染中停用，以避免視覺問題。
 - **音訊互動腳本** — Wallpaper Engine 基於 JavaScript 的音訊視覺化腳本不會執行。帶腳本的屬性回退至靜態 `value`。
 - **著色器效果** — 自定義 GLSL 著色器（泛光、模糊、色彩校正）未套用。
@@ -136,7 +143,7 @@ Cmd+點擊選取多個桌布，右鍵選擇批次取消訂閱。
 | 網頁 (HTML/WebGL) | 正常運作（已修補） |
 | 場景（靜態圖片） | 正常運作（新功能） |
 | 場景（粒子） | 部分支援（已停用） |
-| 場景（DXT 紋理） | 預覽回退 |
+| 場景（DXT1/DXT3/DXT5 紋理） | 軟體解碼 |
 | 應用程式 | 不支援 |
 
 ## 從原始碼建置
@@ -159,10 +166,10 @@ open "Open Wallpaper Engine.xcodeproj"
 
 ### 從 Steam 創意工坊瀏覽與下載
 
-1. 安裝 steamcmd（`brew install steamcmd`）或指向現有的二進位檔
-2. 切換到 **Workshop** 分頁，使用 Steam 帳號登入（必須擁有 Wallpaper Engine）
-3. 出現提示時輸入 [Steam Web API 金鑰](https://steamcommunity.com/dev/apikey)
-4. 搜尋、篩選後開啟桌布卡片，並在詳細資料頁點擊 **Download**
+1. 切換到 **Workshop** 分頁，並在提示時輸入 [Steam Web API 金鑰](https://steamcommunity.com/dev/apikey)
+2. 搜尋、篩選後開啟桌布卡片檢視詳細資料；此步驟不需要 SteamCMD 或 Steam 登入
+3. 點擊 **Download** 後，再安裝 steamcmd（`brew install steamcmd`）或指定現有二進位檔，並以擁有 Wallpaper Engine 的 Steam 帳號登入
+4. 後續排隊下載會重複使用快取的 SteamCMD 登入工作階段
 
 ### 從本地檔案匯入
 

@@ -35,6 +35,14 @@ This project is built on top of the work of:
 
 Licensed under [GPL-3.0](LICENSE), same as the original project.
 
+## What's New in 0.9.2
+
+### Workshop Access and Scene Textures
+
+- **Browse first, configure downloads when needed** — Workshop search, filters, endless scrolling, and item details now use only the Steam Web API. SteamCMD installation and Steam login are requested from the detail view only when downloading.
+- **Reliable cached downloads** — SteamCMD no longer launches while opening the Workshop. It resolves Homebrew symlinks before reusing the same cached SteamCMD session and workshop content directory for queued downloads.
+- **DXT scene textures** — The TEX parser now reads TEXB mipmaps and software-decodes DXT1/BC1, DXT3/BC2, and DXT5/BC3 textures, including LZ4-compressed mipmaps.
+
 ## What's New in 0.9.1
 
 ### In-App Updates
@@ -109,7 +117,7 @@ Scene wallpapers (the most common type on Steam Workshop) were completely unimpl
 
 **New implementation includes:**
 - **PKG parser** — Reads Wallpaper Engine's PKGV archive format to extract scene.json, models, materials, and textures
-- **TEX parser** — Reads TEXV0005 texture containers, extracts embedded JPEG/PNG image data from TEXI/TEXB sections
+- **TEX parser** — Reads TEXV0005 texture containers, extracts embedded JPEG/PNG data, and software-decodes DXT1/DXT3/DXT5 mipmaps
 - **Scene JSON decoder** — Parses scene.json with flexible decoding that handles Wallpaper Engine's polymorphic fields (values can be plain types or `{"script":..,"value":..}` objects)
 - **SpriteKit renderer** — Renders scene image layers as SKSpriteNodes with correct positioning, sizing, alpha, color tinting, and blend modes
 - **Preview fallback** — Falls back to preview.jpg/png/gif when textures can't be extracted
@@ -120,7 +128,6 @@ The import panel now correctly handles both individual wallpaper folders and par
 
 ## Current Limitations
 
-- **DXT textures** — Wallpapers using DXT1/DXT5 compressed textures (TEXI format 4/7/8) cannot be rendered. These are GPU-native compressed formats that require either a software decompressor or Metal-based rendering. The app falls back to the preview image for these wallpapers.
 - **Particle effects** — Scene particle systems (rain, snow, sparkles) are parsed but disabled in rendering to avoid visual artifacts. The particle mapping code exists but needs refinement.
 - **Audio-reactive scripts** — Wallpaper Engine's JavaScript-based audio visualization scripts are not executed. Properties with scripts fall back to their static `value`.
 - **Shader effects** — Custom GLSL shaders (bloom, blur, color correction) are not applied.
@@ -136,7 +143,7 @@ The import panel now correctly handles both individual wallpaper folders and par
 | Web (HTML/WebGL) | Working (patched) |
 | Scene (static images) | Working (new) |
 | Scene (particles) | Partial (disabled) |
-| Scene (DXT textures) | Preview fallback |
+| Scene (DXT1/DXT3/DXT5 textures) | Software-decoded |
 | Application | Not supported |
 
 ## Build from Source
@@ -159,10 +166,10 @@ In Xcode, change the signing certificate to your own or select "Sign to Run Loca
 
 ### Browse & Download from Steam Workshop
 
-1. Install steamcmd (`brew install steamcmd`) or point the app to an existing binary
-2. Switch to the **Workshop** tab and log in with your Steam account (must own Wallpaper Engine)
-3. Enter a [Steam Web API key](https://steamcommunity.com/dev/apikey) when prompted
-4. Search, filter, open a wallpaper card, then click **Download** from its detail view
+1. Switch to the **Workshop** tab and enter a [Steam Web API key](https://steamcommunity.com/dev/apikey) when prompted
+2. Search, filter, and open a wallpaper card to view its details; this does not require SteamCMD or a Steam login
+3. Click **Download**, then install steamcmd (`brew install steamcmd`) or select an existing binary and log in with the Steam account that owns Wallpaper Engine
+4. The cached SteamCMD session is reused for later queued downloads
 
 ### Import from Local Files
 

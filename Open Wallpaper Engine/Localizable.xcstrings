@@ -2590,6 +2590,14 @@
     "This copy of the app cannot be updated automatically." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "当前应用副本无法自动更新。" } } } },
     "The updated app was downloaded, but this app folder is not writable. Move the app to a writable folder and try again." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已下载更新，但当前应用所在文件夹不可写入。请将应用移到可写入的文件夹后重试。" } } } },
     "The update could not be prepared for installation." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "更新无法准备安装。" } } } },
+    "Log in with your Steam account to download wallpapers.\nYou must own Wallpaper Engine on Steam." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请使用 Steam 帐号登录后下载壁纸。\n你必须在 Steam 上拥有 Wallpaper Engine。" } } } },
+    "SteamCMD is required to download wallpapers." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "下载壁纸需要 SteamCMD。" } } } },
+    "Log in to Steam before downloading wallpapers." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "下载壁纸前请先登录 Steam。" } } } },
+    "Set Up Downloads" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "配置下载" } } } },
+    "Downloads Ready" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "下载已就绪" } } } },
+    "SteamCMD is configured and its cached Steam session will be reused for downloads." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "SteamCMD 已配置完成；下载时将复用缓存的 Steam 登录会话。" } } } },
+    "SteamCMD is only required to download wallpapers. Browsing and viewing details use the Steam Web API." : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "仅下载壁纸时需要 SteamCMD；浏览和查看详情使用 Steam Web API。" } } } },
+    "Done" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "完成" } } } },
     "View Details" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "查看详情" } } } }
   },
   "version" : "1.0"

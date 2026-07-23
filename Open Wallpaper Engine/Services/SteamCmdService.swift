@@ -16,10 +16,10 @@ class SteamCmdService: ObservableObject {
     }
 
     private static let lastUsernameKey = "SteamLastUsername"
-    private var hasAttemptedCachedLogin = false
     private let downloadQueue = DispatchQueue(label: "steamcmd.download.queue", qos: .userInitiated)
 
     init() {
+        steamUsername = UserDefaults.standard.string(forKey: Self.lastUsernameKey) ?? ""
         detectSteamCmd()
     }
 
@@ -35,7 +35,7 @@ class SteamCmdService: ObservableObject {
         let process = Process()
         let outputPipe = Pipe()
         let inputPipe = input == nil ? nil : Pipe()
-        process.executableURL = URL(fileURLWithPath: cmdPath)
+        process.executableURL = steamCmdExecutableURL(cmdPath: cmdPath)
         // SteamCMD keeps its account configuration and login token relative to
         // its working directory.  Always use its install directory so login
         // state survives app relaunches as well as download commands.
@@ -102,18 +102,8 @@ class SteamCmdService: ObservableObject {
         return (output, process.terminationStatus)
     }
 
-    /// Automatically try cached session if we have a saved username and steamcmd is installed.
-    private func attemptCachedLogin() {
-        guard !hasAttemptedCachedLogin, isInstalled, !isLoggedIn else { return }
-        if let saved = UserDefaults.standard.string(forKey: Self.lastUsernameKey), !saved.isEmpty {
-            hasAttemptedCachedLogin = true
-            loginWithCachedSession(username: saved)
-        }
-    }
-
     private func setDetectedSteamCmdPath(_ path: String) {
         steamCmdPath = path
-        attemptCachedLogin()
     }
 
     func detectSteamCmd() {
@@ -176,6 +166,10 @@ class SteamCmdService: ObservableObject {
 
     var isInstalled: Bool { steamCmdPath != nil }
 
+    /// Browsing uses the Web API; only downloads need a locally configured,
+    /// authenticated SteamCMD session.
+    var isReadyForDownloads: Bool { isInstalled && isLoggedIn }
+
     @Published var pathError: String?
 
     func setCustomPath(_ path: String) {
@@ -191,10 +185,8 @@ class SteamCmdService: ObservableObject {
         }
         pathError = nil
         UserDefaults.standard.set(path, forKey: "SteamCmdPath")
-        hasAttemptedCachedLogin = false
         isLoggedIn = false
         steamCmdPath = path
-        attemptCachedLogin()
     }
 
     /// Attempt login with username and password. Steam Guard code is optional.
@@ -263,7 +255,14 @@ class SteamCmdService: ObservableObject {
 
     /// Download a workshop item by its ID.
     func downloadWorkshopItem(workshopId: String) {
-        guard let cmdPath = steamCmdPath, isLoggedIn else { return }
+        guard let cmdPath = steamCmdPath else {
+            downloadProgress[workshopId] = .failed(String(localized: "SteamCMD is required to download wallpapers."))
+            return
+        }
+        guard isLoggedIn else {
+            downloadProgress[workshopId] = .failed(String(localized: "Log in to Steam before downloading wallpapers."))
+            return
+        }
 
         downloadProgress[workshopId] = .downloading(status: String(localized: "Queued"))
 
@@ -276,8 +275,8 @@ class SteamCmdService: ObservableObject {
 
             let process = Process()
             let outputPipe = Pipe()
-            process.executableURL = URL(fileURLWithPath: cmdPath)
-            process.currentDirectoryURL = URL(fileURLWithPath: cmdPath).deletingLastPathComponent()
+            process.executableURL = self.steamCmdExecutableURL(cmdPath: cmdPath)
+            process.currentDirectoryURL = self.steamCmdWorkingDirectory(cmdPath: cmdPath)
             process.arguments = [
                 "+login", self.steamUsername,
                 "+workshop_download_item", "431960", workshopId, "validate",
@@ -406,12 +405,12 @@ class SteamCmdService: ObservableObject {
 
     private func findSteamAppsDir(cmdPath: String) -> URL? {
         // steamcmd typically stores downloads relative to its install location
-        let cmdURL = URL(fileURLWithPath: cmdPath)
+        let workingDirectory = steamCmdWorkingDirectory(cmdPath: cmdPath)
 
         // Homebrew: /opt/homebrew/Cellar/steamcmd/...  -> steamapps at ~/Library/Application Support/Steam
         // Manual: wherever steamcmd is -> steamapps in same dir
         let possiblePaths = [
-            cmdURL.deletingLastPathComponent().appending(path: "steamapps"),
+            workingDirectory.appending(path: "steamapps"),
             FileManager.default.homeDirectoryForCurrentUser
                 .appending(path: "Library/Application Support/Steam/steamapps"),
             FileManager.default.homeDirectoryForCurrentUser
@@ -427,6 +426,10 @@ class SteamCmdService: ObservableObject {
     }
 
     private func steamCmdWorkingDirectory(cmdPath: String) -> URL {
-        URL(fileURLWithPath: cmdPath).deletingLastPathComponent()
+        steamCmdExecutableURL(cmdPath: cmdPath).deletingLastPathComponent()
+    }
+
+    private func steamCmdExecutableURL(cmdPath: String) -> URL {
+        URL(fileURLWithPath: cmdPath).resolvingSymlinksInPath()
     }
 }
