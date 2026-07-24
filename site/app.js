@@ -1,10 +1,10 @@
 const repository = "ct-yx/wallpaper-engine-mac";
 const fallbackRelease = {
-  tag_name: "v0.8.1",
-  html_url: `https://github.com/${repository}/releases/tag/v0.8.1`,
+  tag_name: "v0.9.10",
+  html_url: `https://github.com/${repository}/releases/tag/v0.9.10`,
   assets: [{
-    name: "Open-Wallpaper-Engine-v0.8.1-macOS.zip",
-    browser_download_url: `https://github.com/${repository}/releases/download/v0.8.1/Open-Wallpaper-Engine-v0.8.1-macOS.zip`
+    name: "Open-Wallpaper-Engine-v0.9.10-macOS.zip",
+    browser_download_url: `https://github.com/${repository}/releases/download/v0.9.10/Open-Wallpaper-Engine-v0.9.10-macOS.zip`
   }]
 };
 
