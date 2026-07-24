@@ -9,6 +9,8 @@ A patched fork of [Open Wallpaper Engine](https://github.com/MrWindDog/wallpaper
 
 > **Note:** This is NOT affiliated with the commercial Wallpaper Engine on Steam. This is an open-source macOS app that can display wallpaper assets from Wallpaper Engine's Steam Workshop.
 
+> **Project status:** Development of this project has ended. For a more complete macOS implementation, please visit **[jipika/WaifuX](https://github.com/jipika/WaifuX)**.
+
 ## Project Website
 
 Visit the [project website](https://ct-yx.github.io/wallpaper-engine-mac/) for screenshots, feature highlights, and the latest download.

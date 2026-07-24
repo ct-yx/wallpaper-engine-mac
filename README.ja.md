@@ -9,6 +9,8 @@ Open Wallpaper Engine（パッチ版）
 
 > **注意：** 本プロジェクトは Steam の商用版 Wallpaper Engine とは無関係です。Steam Workshop の壁紙アセットを表示できるオープンソースの macOS アプリケーションです。
 
+> **プロジェクトの状態：** 本プロジェクトの開発は終了しました。より完全な macOS 実装については **[jipika/WaifuX](https://github.com/jipika/WaifuX)** をご覧ください。
+
 ## プロジェクトサイト
 
 スクリーンショット、主な機能、最新のダウンロードは[プロジェクトサイト](https://ct-yx.github.io/wallpaper-engine-mac/)をご覧ください。

@@ -9,6 +9,8 @@ Open Wallpaper Engine（修补版）
 
 > **注意：** 本项目与 Steam 上的商业版 Wallpaper Engine 没有任何关联。这是一款可显示 Wallpaper Engine Steam 创意工坊壁纸资源的开源 macOS 应用。
 
+> **项目状态：** 本项目不再继续开发。若你在寻找功能更完善的 macOS 实现，请前往 **[jipika/WaifuX](https://github.com/jipika/WaifuX)**。
+
 ## 项目主页
 
 前往[项目主页](https://ct-yx.github.io/wallpaper-engine-mac/)查看截图、功能亮点和最新下载。
