@@ -35,6 +35,14 @@ This project is built on top of the work of:
 
 Licensed under [GPL-3.0](LICENSE), same as the original project.
 
+## What's New in 0.9.10
+
+### Scene Text, Sound, and Safer SteamCMD Imports
+
+- **Static scene text** — Scene `text` objects now render their content, source font (including package-contained fonts), point size, wrapping width, color, alpha, padding, alignment, hierarchy, and initial `{"value": ...}` setting values.
+- **Scene sound objects** — Scene `sound` arrays and single sound paths now play from loose files or `.pkg` assets. `loop` mode, sleep/wake behavior, and the shared volume/playback-rate controls are supported.
+- **Complete-cache checks and rollback** — SteamCMD content is reusable only after both `project.json` and its playable root asset are present. Imports preserve a previous local copy until the staged replacement succeeds.
+
 ## What's New in 0.9.9
 
 ### SteamCMD Session Flow

@@ -95,6 +95,17 @@ struct WESceneObject: Codable {
     var parallaxDepth: WEFlexValue?
     var perspective: Bool?
 
+    // Text objects
+    var text: WEFlexValue?
+    var font: String?
+    var pointsize: WEFlexValue?
+    var verticalalign: String?
+    var padding: WEFlexValue?
+
+    // Sound objects
+    var sound: [String]?
+    var playbackmode: String?
+
     // Particle objects
     var particle: String?    // path to particle JSON
     var instanceoverride: WEInstanceOverride?
@@ -103,6 +114,8 @@ struct WESceneObject: Codable {
         case id, name, parent, origin, scale, angles, visible
         case image, alpha, brightness, color, colorBlendMode, size, alignment, horizontalalign
         case solid, copybackground, parallaxDepth, perspective
+        case text, font, pointsize, verticalalign, padding
+        case sound, playbackmode
         case particle, instanceoverride
     }
 
@@ -135,6 +148,23 @@ struct WESceneObject: Codable {
         copybackground = try? c.decodeIfPresent(Bool.self, forKey: .copybackground)
         parallaxDepth = try? c.decodeIfPresent(WEFlexValue.self, forKey: .parallaxDepth)
         perspective = try? c.decodeIfPresent(Bool.self, forKey: .perspective)
+
+        text = try? c.decodeIfPresent(WEFlexValue.self, forKey: .text)
+        font = try? c.decodeIfPresent(String.self, forKey: .font)
+        pointsize = try? c.decodeIfPresent(WEFlexValue.self, forKey: .pointsize)
+        verticalalign = try? c.decodeIfPresent(String.self, forKey: .verticalalign)
+        padding = try? c.decodeIfPresent(WEFlexValue.self, forKey: .padding)
+
+        // Most scene files use an array, while a few hand-authored projects
+        // use one string for a single sound asset.
+        if let sounds = try? c.decodeIfPresent([String].self, forKey: .sound) {
+            sound = sounds
+        } else if let singleSound = try? c.decodeIfPresent(String.self, forKey: .sound) {
+            sound = [singleSound]
+        } else {
+            sound = nil
+        }
+        playbackmode = try? c.decodeIfPresent(String.self, forKey: .playbackmode)
     }
 }
 
@@ -325,6 +355,21 @@ enum WEFlexValue: Codable {
                 values.count > 1 ? values[1] : 0,
                 values.count > 2 ? values[2] : 0
             )
+        }
+    }
+
+    /// Text objects use the same user/script wrapper as numeric scene values.
+    /// Keep the original string intact instead of coercing it through a number
+    /// so static labels, including localized text, can be rendered faithfully.
+    var stringValue: String? {
+        switch self {
+        case .string(let string):
+            return string
+        case .number(let number):
+            guard number.isFinite else { return nil }
+            return number.rounded() == number ? String(Int(number)) : String(number)
+        case .vector:
+            return nil
         }
     }
 }

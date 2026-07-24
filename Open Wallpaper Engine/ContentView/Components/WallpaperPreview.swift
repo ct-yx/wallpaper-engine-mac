@@ -193,7 +193,7 @@ struct WallpaperPreview: SubviewOfContentView {
                         .opacity(0.5)
                         .disabled(true)
                         switch wallpaperViewModel.currentWallpaper.project.type.lowercased() {
-                        case "video":
+                        case "video", "scene":
                             HStack {
                                 Label("Volume", systemImage: "speaker.wave.3.fill")
                                 Spacer()

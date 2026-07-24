@@ -473,17 +473,41 @@ class SteamCmdService: ObservableObject {
         let staging = fm.wallpapersDirectory.appending(
             path: ".\(workshopId).downloading-\(UUID().uuidString)"
         )
+        let backup = fm.wallpapersDirectory.appending(
+            path: ".\(workshopId).previous-\(UUID().uuidString)"
+        )
+        var movedExistingDestination = false
         do {
             try fm.copyItem(at: sourceDir, to: staging)
             if fm.fileExists(atPath: destination.path) {
-                try fm.removeItem(at: destination)
+                // Never delete an installed wallpaper before its replacement
+                // has been copied successfully.  A failed disk write or an
+                // interrupted import must leave the previous working copy
+                // recoverable instead of turning an update into data loss.
+                try fm.moveItem(at: destination, to: backup)
+                movedExistingDestination = true
             }
-            try fm.moveItem(at: staging, to: destination)
+            do {
+                try fm.moveItem(at: staging, to: destination)
+            } catch {
+                if movedExistingDestination, !fm.fileExists(atPath: destination.path) {
+                    try? fm.moveItem(at: backup, to: destination)
+                }
+                throw error
+            }
+            if movedExistingDestination {
+                try? fm.removeItem(at: backup)
+            }
             DispatchQueue.main.async {
                 self.downloadProgress[workshopId] = .completed
             }
         } catch {
             try? fm.removeItem(at: staging)
+            if movedExistingDestination,
+               !fm.fileExists(atPath: destination.path),
+               fm.fileExists(atPath: backup.path) {
+                try? fm.moveItem(at: backup, to: destination)
+            }
             DispatchQueue.main.async {
                 self.downloadProgress[workshopId] = .failed(
                     String(format: String(localized: "Copy failed: %@"), error.localizedDescription)
@@ -530,19 +554,62 @@ class SteamCmdService: ObservableObject {
         steamAppsDirectories(cmdPath: cmdPath).first { steamAppsDirectory in
             let contentDirectory = steamAppsDirectory
                 .appending(path: "workshop/content/431960/\(workshopId)")
-            var isDirectory: ObjCBool = false
-            return FileManager.default.fileExists(
-                atPath: contentDirectory.path,
-                isDirectory: &isDirectory
-            ) && isDirectory.boolValue
-                // SteamCMD creates the target directory before transfer
-                // completion.  `project.json` is the minimum item contract
-                // used by this app, so only reuse a complete cached download.
-                && FileManager.default.fileExists(
-                    atPath: contentDirectory.appending(path: "project.json").path
-                )
+            return isCompleteWorkshopContentDirectory(contentDirectory)
         }
         .map { $0.appending(path: "workshop/content/431960/\(workshopId)") }
+    }
+
+    /// SteamCMD creates the target directory and can write `project.json`
+    /// before the referenced scene/video package is complete.  Reusing only
+    /// that marker can import a truncated wallpaper and replace a working
+    /// local copy.  Require the project manifest and its playable root asset
+    /// (loose source or matching PKG) before treating a cache entry as ready.
+    private func isCompleteWorkshopContentDirectory(_ directory: URL) -> Bool {
+        var isDirectory: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: directory.path, isDirectory: &isDirectory),
+              isDirectory.boolValue else {
+            return false
+        }
+
+        let projectURL = directory.appending(path: "project.json")
+        guard isNonEmptyRegularFile(projectURL),
+              let data = try? Data(contentsOf: projectURL),
+              let project = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let rootAsset = project["file"] as? String,
+              let rootAssetURL = safeWorkshopAssetURL(rootAsset, in: directory) else {
+            return false
+        }
+
+        var candidates = [rootAssetURL]
+        let rootPath = rootAsset as NSString
+        if rootPath.pathExtension.lowercased() != "pkg" {
+            candidates.append(
+                directory.appending(path: rootPath.deletingPathExtension + ".pkg")
+            )
+        }
+        return candidates.contains(where: isNonEmptyRegularFile)
+    }
+
+    private func safeWorkshopAssetURL(_ relativePath: String, in directory: URL) -> URL? {
+        let normalizedPath = relativePath.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalizedPath.isEmpty,
+              !normalizedPath.hasPrefix("/"),
+              !normalizedPath.split(separator: "/").contains("..") else {
+            return nil
+        }
+        let candidate = directory.appending(path: normalizedPath).standardizedFileURL
+        let normalizedDirectory = directory.standardizedFileURL.path
+        guard candidate.path.hasPrefix(normalizedDirectory + "/") else { return nil }
+        return candidate
+    }
+
+    private func isNonEmptyRegularFile(_ url: URL) -> Bool {
+        guard let values = try? url.resourceValues(forKeys: [.isRegularFileKey, .fileSizeKey]),
+              values.isRegularFile == true,
+              (values.fileSize ?? 0) > 0 else {
+            return false
+        }
+        return true
     }
 
     private func steamAppsDirectories(cmdPath: String) -> [URL] {

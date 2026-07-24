@@ -6,6 +6,9 @@
 //  Follows the same ViewModel pattern as VideoWallpaperViewModel.
 //
 
+import AVFoundation
+import Combine
+import CoreText
 import SpriteKit
 import SwiftUI
 
@@ -28,6 +31,18 @@ class SceneWallpaperViewModel: ObservableObject {
     private var parallaxConfiguration: ParallaxConfiguration?
     private var parallaxDisplacement = CGPoint.zero
     private var lastParallaxUpdateTime: TimeInterval?
+    /// Core Text registers embedded scene fonts process-wide.  Retain the
+    /// resolved PostScript name per source file so repeated scene loads do not
+    /// register the same font again.
+    private static var registeredTextFonts = [String: String]()
+    private var sceneAudioPlayers: [AVAudioPlayer] = []
+    private var sceneAudioCancellables = Set<AnyCancellable>()
+    private var playbackRate: Float = 1
+    private var playbackVolume: Float = 1
+
+    /// Exposed for diagnostics and the focused renderer fixture.  A scene can
+    /// have multiple sound objects and each one can reference multiple assets.
+    var activeSceneAudioCount: Int { sceneAudioPlayers.count }
 
     private struct ParallaxNode {
         let node: SKNode
@@ -56,6 +71,7 @@ class SceneWallpaperViewModel: ObservableObject {
         NSWorkspace.shared.notificationCenter.addObserver(
             self, selector: #selector(systemDidWake(_:)),
             name: NSWorkspace.didWakeNotification, object: nil)
+        observeGlobalPlayback()
         loadScene(from: wallpaper)
     }
 
@@ -67,6 +83,7 @@ class SceneWallpaperViewModel: ObservableObject {
     // MARK: - Scene Loading
 
     func loadScene(from wallpaper: WEWallpaper) {
+        stopSceneAudio()
         let dir = wallpaper.wallpaperDirectory
         let sceneFile = wallpaper.project.file  // e.g. "scene.json" or "gifscene.json"
 
@@ -173,9 +190,11 @@ class SceneWallpaperViewModel: ObservableObject {
             return node
         }
 
-        var hasImage = false
+        var hasRenderableContent = false
         var imageCount = 0
         var particleCount = 0
+        var textCount = 0
+        var soundCount = 0
         for (index, obj) in scene.objects.enumerated() {
             let objectContainer = container(for: index)
             guard obj.visible?.value != false else { continue }
@@ -183,19 +202,37 @@ class SceneWallpaperViewModel: ObservableObject {
                let node = buildImageNode(obj, wallpaperDir: wallpaperDir) {
                 objectContainer.addChild(node)
                 registerParallax(node: objectContainer, object: obj, isParticle: false)
-                hasImage = true
+                hasRenderableContent = true
                 imageCount += 1
             } else if obj.particle != nil,
                       let node = buildParticleNode(obj, wallpaperDir: wallpaperDir) {
                 objectContainer.addChild(node)
                 registerParallax(node: objectContainer, object: obj, isParticle: true)
+                hasRenderableContent = true
                 particleCount += 1
+            } else if obj.text != nil,
+                      let node = buildTextNode(obj, wallpaperDir: wallpaperDir) {
+                objectContainer.addChild(node)
+                registerParallax(node: objectContainer, object: obj, isParticle: false)
+                hasRenderableContent = true
+                textCount += 1
+            } else if let soundPaths = obj.sound {
+                soundCount += buildSceneSoundPlayers(
+                    soundPaths,
+                    playbackMode: obj.playbackmode,
+                    wallpaperDir: wallpaperDir
+                )
             }
         }
-        Self.log("Scene render nodes: \(imageCount + particleCount) (\(imageCount) images, \(particleCount) particle systems)")
+        Self.log(
+            "Scene render nodes: \(imageCount + particleCount + textCount) "
+                + "(\(imageCount) images, \(particleCount) particle systems, \(textCount) text objects, "
+                + "\(soundCount) sound assets)"
+        )
+        applySceneAudioPlayback()
 
         // Fallback: use preview image
-        if !hasImage {
+        if !hasRenderableContent {
             let previewImage = loadPreviewImage(wallpaperDir: wallpaperDir)
             if let img = previewImage {
                 let node = SKSpriteNode(texture: SKTexture(image: img))
@@ -310,6 +347,236 @@ class SceneWallpaperViewModel: ObservableObject {
         }
 
         return anchor
+    }
+
+    // MARK: - Text Objects
+
+    /// Builds the static text-object subset implemented by the Linux renderer:
+    /// content, custom/system font, point size, bounding width, color, alpha,
+    /// alignment, padding, and the enclosing scene transform.  Script-driven
+    /// text retains its initial `value` when one is present in the source.
+    private func buildTextNode(_ obj: WESceneObject, wallpaperDir: URL) -> SKLabelNode? {
+        guard let text = obj.text?.stringValue, !text.isEmpty else { return nil }
+
+        let pointSize = safeParticleScalar(
+            obj.pointsize?.doubleValue ?? 32,
+            fallback: 32,
+            minimum: 1,
+            maximum: 512
+        )
+        let label = SKLabelNode(fontNamed: textFontName(reference: obj.font, wallpaperDir: wallpaperDir))
+        label.name = obj.name.map { "scene-text-\($0)" }
+        label.text = text
+        label.fontSize = pointSize
+        label.fontColor = obj.color.map { particleColor(from: $0.vectorValue) } ?? .white
+        label.alpha = safeParticleScalar(
+            obj.alpha?.doubleValue ?? 1,
+            fallback: 1,
+            minimum: 0,
+            maximum: 1
+        )
+
+        let horizontalAlignment = (obj.horizontalalign ?? obj.alignment ?? "center").lowercased()
+        let verticalAlignment = (obj.verticalalign ?? "center").lowercased()
+        let padding = safeParticleScalar(
+            obj.padding?.doubleValue ?? 0,
+            fallback: 0,
+            minimum: 0,
+            maximum: 10_000
+        )
+
+        switch horizontalAlignment {
+        case let value where value.contains("left"):
+            label.horizontalAlignmentMode = .left
+            label.position.x = padding
+        case let value where value.contains("right"):
+            label.horizontalAlignmentMode = .right
+            label.position.x = -padding
+        default:
+            label.horizontalAlignmentMode = .center
+        }
+
+        // Match the image-anchor conversion above: source scene coordinates
+        // are Y-down while the SpriteKit scene has already been flipped.
+        switch verticalAlignment {
+        case let value where value.contains("top"):
+            label.verticalAlignmentMode = .bottom
+            label.position.y = padding
+        case let value where value.contains("bottom"):
+            label.verticalAlignmentMode = .top
+            label.position.y = -padding
+        default:
+            label.verticalAlignmentMode = .center
+        }
+
+        if let sourceSize = obj.size?.vectorValue, sourceSize.0 > 0 {
+            label.preferredMaxLayoutWidth = max(1, CGFloat(sourceSize.0) - (padding * 2))
+            label.numberOfLines = 0
+            label.lineBreakMode = .byWordWrapping
+        }
+
+        return label
+    }
+
+    private func textFontName(reference: String?, wallpaperDir: URL) -> String? {
+        let defaultFontName = NSFont.systemFont(ofSize: NSFont.systemFontSize).fontName
+        guard let reference else { return defaultFontName }
+
+        let trimmedReference = reference.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedReference.isEmpty else { return defaultFontName }
+
+        // `systemfont_arial` is the convention used by many source scenes.
+        // Prefer the font's actual PostScript name so SpriteKit can resolve it.
+        let systemReference = trimmedReference
+            .replacingOccurrences(of: "systemfont_", with: "", options: [.caseInsensitive])
+            .replacingOccurrences(of: "_", with: " ")
+        for candidate in [trimmedReference, systemReference] {
+            if let font = NSFont(name: candidate, size: NSFont.systemFontSize) {
+                return font.fontName
+            }
+        }
+
+        var paths = [String]()
+        func appendPath(_ path: String) {
+            guard !path.isEmpty, !paths.contains(path) else { return }
+            paths.append(path)
+        }
+
+        appendPath(trimmedReference)
+        if !trimmedReference.hasPrefix("materials/") {
+            appendPath("materials/fonts/\(trimmedReference)")
+            appendPath("materials/\(trimmedReference)")
+        }
+        if (trimmedReference as NSString).pathExtension.isEmpty {
+            for extensionName in ["ttf", "otf"] {
+                appendPath("\(trimmedReference).\(extensionName)")
+                if !trimmedReference.hasPrefix("materials/") {
+                    appendPath("materials/fonts/\(trimmedReference).\(extensionName)")
+                }
+            }
+        }
+
+        for path in paths {
+            if let name = registerTextFont(path: path, wallpaperDir: wallpaperDir) {
+                return name
+            }
+        }
+        return defaultFontName
+    }
+
+    private func registerTextFont(path: String, wallpaperDir: URL) -> String? {
+        let cacheKey = "\(wallpaperDir.path):\(path)"
+        if let existingName = Self.registeredTextFonts[cacheKey] {
+            return existingName
+        }
+        guard let fontData = loadSceneAssetData(path: path, wallpaperDir: wallpaperDir) else {
+            return nil
+        }
+
+        // PKG-contained fonts have no stable file URL.  Core Text's supported
+        // process registration API accepts URLs, so materialize the data in the
+        // system temporary directory for this app run rather than relying on
+        // the deprecated graphics-font registration API.
+        let extensionName = (path as NSString).pathExtension.isEmpty
+            ? "ttf"
+            : (path as NSString).pathExtension
+        let fontDirectory = FileManager.default.temporaryDirectory
+            .appending(path: "OpenWallpaperEngine/scene-fonts", directoryHint: .isDirectory)
+        let fontURL = fontDirectory.appending(path: "\(UUID().uuidString).\(extensionName)")
+        do {
+            try FileManager.default.createDirectory(at: fontDirectory, withIntermediateDirectories: true)
+            try fontData.write(to: fontURL, options: .atomic)
+        } catch {
+            Self.log("Unable to stage text font '\(path)': \(error.localizedDescription)")
+            return nil
+        }
+
+        var registrationError: Unmanaged<CFError>?
+        if !CTFontManagerRegisterFontsForURL(fontURL as CFURL, .process, &registrationError), let registrationError {
+            // An already-registered PostScript name is usable as-is.  Keep the
+            // diagnostic for malformed fonts but still allow the renderer to
+            // request the resolved name below.
+            Self.log("Text font registration for '\(path)' returned \(registrationError.takeRetainedValue().localizedDescription)")
+        }
+
+        guard let descriptor = (CTFontManagerCreateFontDescriptorsFromURL(fontURL as CFURL) as? [CTFontDescriptor])?.first,
+              let postScriptName = CTFontDescriptorCopyAttribute(descriptor, kCTFontNameAttribute) as? String else {
+            return nil
+        }
+        Self.registeredTextFonts[cacheKey] = postScriptName
+        return postScriptName
+    }
+
+    // MARK: - Sound Objects
+
+    /// Mirrors the reference renderer's `CSound`: each `sound` asset is
+    /// loaded from the loose directory or scene package and repeats only when
+    /// the object's playback mode is `loop`.  Playback rate/volume follow the
+    /// shared wallpaper controls just like video wallpapers do.
+    @discardableResult
+    private func buildSceneSoundPlayers(
+        _ paths: [String],
+        playbackMode: String?,
+        wallpaperDir: URL
+    ) -> Int {
+        let shouldLoop = playbackMode?.caseInsensitiveCompare("loop") == .orderedSame
+        var createdCount = 0
+
+        for path in paths {
+            guard let data = loadSceneAssetData(path: path, wallpaperDir: wallpaperDir) else {
+                Self.log("Unable to load scene sound '\(path)'")
+                continue
+            }
+            do {
+                let player = try AVAudioPlayer(data: data)
+                player.numberOfLoops = shouldLoop ? -1 : 0
+                player.enableRate = true
+                player.prepareToPlay()
+                sceneAudioPlayers.append(player)
+                createdCount += 1
+            } catch {
+                Self.log("Unable to decode scene sound '\(path)': \(error.localizedDescription)")
+            }
+        }
+
+        return createdCount
+    }
+
+    private func observeGlobalPlayback() {
+        let wallpaperViewModel = AppDelegate.shared.wallpaperViewModel
+        wallpaperViewModel.$playRate
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] rate in
+                self?.playbackRate = rate
+                self?.applySceneAudioPlayback()
+            }
+            .store(in: &sceneAudioCancellables)
+        wallpaperViewModel.$playVolume
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] volume in
+                self?.playbackVolume = volume
+                self?.applySceneAudioPlayback()
+            }
+            .store(in: &sceneAudioCancellables)
+    }
+
+    private func applySceneAudioPlayback() {
+        let volume = max(0, min(playbackVolume, 1))
+        let rate = max(0.25, min(playbackRate, 2))
+        for player in sceneAudioPlayers {
+            player.volume = volume
+            player.rate = rate
+            if playbackRate == 0 {
+                player.pause()
+            } else if !player.isPlaying {
+                player.play()
+            }
+        }
+    }
+
+    private func stopSceneAudio() {
+        sceneAudioPlayers.forEach { $0.stop() }
+        sceneAudioPlayers.removeAll()
     }
 
     private func configureSceneObjectContainer(
@@ -966,6 +1233,13 @@ class SceneWallpaperViewModel: ObservableObject {
         return try? JSONDecoder().decode(T.self, from: data)
     }
 
+    private func loadSceneAssetData(path: String, wallpaperDir: URL) -> Data? {
+        if let parser = pkgParser, let data = parser.extractFile(named: path) {
+            return Data(data)
+        }
+        return try? Data(contentsOf: wallpaperDir.appending(path: path))
+    }
+
     private func loadTexture(named name: String, materialDir: String, wallpaperDir: URL) -> NSImage? {
         loadTextureAsset(named: name, materialDir: materialDir, wallpaperDir: wallpaperDir)?.image
     }
@@ -1143,11 +1417,13 @@ class SceneWallpaperViewModel: ObservableObject {
     @objc func systemWillSleep(_ notification: Notification) {
         print("[SceneVM] System is going to sleep")
         skScene?.isPaused = true
+        sceneAudioPlayers.forEach { $0.pause() }
     }
 
     @objc func systemDidWake(_ notification: Notification) {
         print("[SceneVM] System woke up")
-        skScene?.isPaused = false
+        skScene?.isPaused = playbackRate == 0
+        applySceneAudioPlayback()
     }
 }
 
